@@ -4,7 +4,7 @@ from . import models
 from .database import engine, SessionLocal
 from .routers import crops, genomics, transcriptomics, metabolomics
 import json
-
+import pandas as pd
 # Drop and recreate all tables to match updated models
 models.Base.metadata.drop_all(bind=engine)
 models.Base.metadata.create_all(bind=engine)
