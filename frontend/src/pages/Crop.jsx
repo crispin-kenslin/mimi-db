@@ -22,7 +22,7 @@ function Crop() {
   useEffect(() => {
     const fetchCropData = async () => {
       try {
-        const response = await axios.get(`http://localhost:8000/crops/${id}`);
+        const response = await axios.get(`/api/crops/${id}`);
         setCrop(response.data);
       } catch (error) {
         console.error("Error fetching crop data:", error);

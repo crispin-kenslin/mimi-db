@@ -13,7 +13,7 @@ function Search() {
   useEffect(() => {
     const fetchCrops = async () => {
       try {
-        const response = await axios.get('http://localhost:8000/crops/');
+        const response = await axios.get('/api/crops/');
         setCrops(response.data);
       } catch (error) {
         console.error("Error fetching crops for search:", error);
