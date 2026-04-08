@@ -51,3 +51,24 @@ desktop.ini
 # Logs
 *.log
 logs/
+
+.blast_cache/
+
+# Executables and DLLs
+*.exe
+*.dll
+blast/
+
+# Data and large files
+data/
+*.gz
+*.zip
+*.tar.gz
+*.fai
+*.fasta
+
+# JBrowse cache and build artifacts
+.jbrowse-cache/
+jbroswe/static/
+*.map
+*.chunk.js

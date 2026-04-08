@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { ArrowRight, Database, Dna, FlaskConical, BarChart3 } from 'lucide-react';
 
+const toSlug = (name) => name.toLowerCase().trim().replace(/\s+/g, '-');
+
 const CROP_IMAGES = {
   'Finger Millet': '/images/finger_millet.png',
   'Foxtail Millet': '/images/foxtail_millet.png',
@@ -44,11 +46,11 @@ function useCounter(target, duration = 2000) {
   return { count, ref };
 }
 
-function AnimatedCounter({ value, suffix = '', label }) {
+function AnimatedCounter({ value, label }) {
   const { count, ref } = useCounter(value);
   return (
     <div className="hero-counter" ref={ref}>
-      <div className="hero-counter-value">{count.toLocaleString()}{suffix}</div>
+      <div className="hero-counter-value">{count.toLocaleString()}</div>
       <div className="hero-counter-label">{label}</div>
     </div>
   );
@@ -56,13 +58,24 @@ function AnimatedCounter({ value, suffix = '', label }) {
 
 function Home() {
   const [crops, setCrops] = useState([]);
+  const [stats, setStats] = useState({
+    millet_species: 0,
+    reference_genomes: 0,
+    transcriptome_studies: 0,
+    metabolites_catalogued: 0,
+    predicted_genes: 0,
+  });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchCrops = async () => {
       try {
-        const response = await axios.get('/api/crops/');
-        setCrops(response.data);
+        const [cropResponse, statsResponse] = await Promise.all([
+          axios.get('/api/crops/'),
+          axios.get('/api/stats/overview'),
+        ]);
+        setCrops(cropResponse.data);
+        setStats(statsResponse.data);
       } catch (error) {
         console.error("Error fetching crops:", error);
       } finally {
@@ -79,10 +92,6 @@ function Home() {
       {/* ===== HERO ===== */}
       <section className="hero-section">
         <div className="hero-inner">
-          <div className="hero-badge">
-            <span className="hero-badge-dot"></span>
-            MIMI DB — Open Access
-          </div>
           <h1 className="hero-title">
             Minor Millets<br />Multi-Omics Database
           </h1>
@@ -92,12 +101,12 @@ function Home() {
             accessible in a single platform.
           </p>
           <div className="hero-counters">
-            <AnimatedCounter value={6} label="Millet Species" />
-            <AnimatedCounter value={6} label="Reference Genomes" />
-            <AnimatedCounter value={8} suffix="+" label="Transcriptome Studies" />
-            <AnimatedCounter value={2800} suffix="+" label="Metabolites Catalogued" />
-            <AnimatedCounter value={350000} suffix="+" label="Predicted Genes" />
-          </div>
+            <AnimatedCounter value={stats.millet_species} label="Millet Species" />
+            <AnimatedCounter value={stats.reference_genomes} label="Reference Genomes" />
+            <AnimatedCounter value={stats.transcriptome_studies} label="Transcriptome Studies" />
+            <AnimatedCounter value={stats.metabolites_catalogued} label="Metabolites Catalogued" />
+            <AnimatedCounter value={stats.predicted_genes} label="Predicted Genes" />
+          </div> 
         </div>
       </section>
 
@@ -109,7 +118,7 @@ function Home() {
         </div>
         <div className="millets-row">
           {crops.map((crop) => (
-            <Link to={`/crop/${crop.id}`} key={crop.id} className="millet-card">
+            <Link to={`/crop/${toSlug(crop.name)}`} key={crop.id} className="millet-card">
               <div className="millet-card-img-wrap">
                 <img
                   src={CROP_IMAGES[crop.name] || '/images/finger_millet.png'}

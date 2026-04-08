@@ -1,0 +1,64 @@
+{
+  "crops": [
+    {
+      "name": "Finger Millet",
+      "scientific_name": "Eleusine coracana",
+      "family": "Poaceae",
+      "description": "Core metadata record for Finger Millet.",
+      "chromosome_number": 36,
+      "ploidy_level": "Allotetraploid (2n=4x=36)",
+      "genome_size_mb": 1196.0,
+      "common_names": "Ragi"
+    },
+    {
+      "name": "Foxtail Millet",
+      "scientific_name": "Setaria italica",
+      "family": "Poaceae",
+      "description": "Core metadata record for Foxtail Millet.",
+      "chromosome_number": 18,
+      "ploidy_level": "Diploid (2n=2x=18)",
+      "genome_size_mb": 490.0,
+      "common_names": "Thinai"
+    },
+    {
+      "name": "Proso Millet",
+      "scientific_name": "Panicum miliaceum",
+      "family": "Poaceae",
+      "description": "Core metadata record for Proso Millet.",
+      "chromosome_number": 36,
+      "ploidy_level": "Allotetraploid (2n=4x=36)",
+      "genome_size_mb": 923.0,
+      "common_names": "Cheena"
+    },
+    {
+      "name": "Pearl Millet",
+      "scientific_name": "Pennisetum glaucum",
+      "family": "Poaceae",
+      "description": "Core metadata record for Pearl Millet.",
+      "chromosome_number": 14,
+      "ploidy_level": "Diploid (2n=2x=14)",
+      "genome_size_mb": 1760.0,
+      "common_names": "Bajra"
+    },
+    {
+      "name": "Little Millet",
+      "scientific_name": "Panicum sumatrense",
+      "family": "Poaceae",
+      "description": "Core metadata record for Little Millet.",
+      "chromosome_number": 36,
+      "ploidy_level": "Tetraploid (2n=4x=36)",
+      "genome_size_mb": 510.0,
+      "common_names": "Samai"
+    },
+    {
+      "name": "Barnyard Millet",
+      "scientific_name": "Echinochloa esculenta",
+      "family": "Poaceae",
+      "description": "Core metadata record for Barnyard Millet.",
+      "chromosome_number": 54,
+      "ploidy_level": "Hexaploid (2n=6x=54)",
+      "genome_size_mb": 1340.0,
+      "common_names": "Sanwa"
+    }
+  ]
+}

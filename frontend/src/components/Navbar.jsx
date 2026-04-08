@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import axios from 'axios';
-import { Leaf, ChevronDown } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
+import logo from '../static/images/logo.png';
+
+const toSlug = (name) => name.toLowerCase().trim().replace(/\s+/g, '-');
 
 const CROP_IMAGES = {
   'Finger Millet': '/images/finger_millet.png',
@@ -19,7 +22,7 @@ function Navbar() {
   useEffect(() => {
     const fetchCrops = async () => {
       try {
-        const response = await axios.get('http://localhost:8000/crops/');
+        const response = await axios.get('/api/crops/');
         setCrops(response.data);
       } catch (err) {
         console.error(err);
@@ -32,15 +35,14 @@ function Navbar() {
     <>
       <div className="topbar">
         <div className="topbar-inner">
-          <span>Tamil Nadu Agricultural University — Bioinformatics Centre</span>
-          <span>An Integrative Multi-Omics Resource for Minor Millets</span>
+          <span>Tamil Nadu Agricultural University — Minor Millets Database</span>
         </div>
       </div>
       <nav className="navbar">
         <div className="navbar-inner">
           <Link to="/" className="navbar-brand">
             <div className="navbar-brand-icon">
-              <Leaf size={22} />
+              <img src={logo} alt="MIMI DB" className="navbar-logo" />
             </div>
             <div className="navbar-brand-text">
               <span className="navbar-brand-title">MIMI DB</span>
@@ -59,7 +61,7 @@ function Navbar() {
               </span>
               <div className="nav-dropdown-menu">
                 {crops.map((crop) => (
-                  <Link to={`/crop/${crop.id}`} key={crop.id} className="nav-dropdown-item">
+                  <Link to={`/crop/${toSlug(crop.name)}`} key={crop.id} className="nav-dropdown-item">
                     <img
                       src={CROP_IMAGES[crop.name] || '/images/finger_millet.png'}
                       alt={crop.name}
