@@ -13,7 +13,7 @@ import About from './pages/About';
 
 function App() {
   return (
-    <Router>
+    <Router basename={import.meta.env.BASE_URL}>
       <div className="app-container">
         <Navbar />
         <main className="main-content">
@@ -23,6 +23,7 @@ function App() {
             <Route path="/search" element={<Search />} />
             <Route path="/tools" element={<Tools />} />
             <Route path="/tools/jbrowse" element={<ToolsJBrowse />} />
+            <Route path="/browse" element={<ToolsJBrowse />} />
             <Route path="/tools/blast" element={<ToolsBlast />} />
             <Route path="/help" element={<Help />} />
             <Route path="/about" element={<About />} />

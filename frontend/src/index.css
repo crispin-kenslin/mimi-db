@@ -1007,6 +1007,72 @@ button { cursor: pointer; font-family: inherit; }
   to { opacity: 1; transform: translateY(0); }
 }
 
+/* BLAST page uses full-width layout for wide result tables. */
+.blast-page .page-header h1,
+.blast-page .page-header p {
+  max-width: 1320px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.blast-section {
+  max-width: none;
+  width: 100%;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+.jbrowse-page .page-header h1,
+.jbrowse-page .page-header p {
+  max-width: 1320px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.jbrowse-section {
+  max-width: none;
+  width: 100%;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+.jbrowse-frame {
+  display: block;
+  width: 100%;
+  height: calc(100vh - 240px);
+  min-height: 620px;
+}
+
+.blast-results-table {
+  width: 100%;
+  table-layout: fixed;
+}
+
+.blast-results-scroll {
+  max-height: 60vh;
+  overflow: auto;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-md);
+}
+
+.blast-results-table th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.blast-results-table td,
+.blast-results-table th {
+  white-space: nowrap;
+}
+
+.blast-results-table td:nth-child(4),
+.blast-results-table th:nth-child(4) {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
 /* ===========================
    RESPONSIVE
    =========================== */
@@ -1029,4 +1095,23 @@ button { cursor: pointer; font-family: inherit; }
   .info-label { width: auto; }
   .stats-grid { grid-template-columns: repeat(2, 1fr); }
   .features-grid { grid-template-columns: 1fr; }
+
+  .blast-section {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+
+  .jbrowse-section {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+
+  .jbrowse-frame {
+    height: calc(100vh - 210px);
+    min-height: 520px;
+  }
+
+  .blast-results-scroll {
+    max-height: 55vh;
+  }
 }

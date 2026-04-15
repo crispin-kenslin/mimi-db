@@ -1,0 +1,9 @@
+RewriteEngine On
+
+# Let Apache proxy handle backend and static backend mounts.
+RewriteRule ^(api|jbrowse|data)/ - [L]
+
+# React SPA fallback for /mimi-db and /mimi-db/browse.
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule . /mimi-db/index.html [L]

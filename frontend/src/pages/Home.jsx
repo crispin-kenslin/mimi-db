@@ -4,14 +4,15 @@ import axios from 'axios';
 import { ArrowRight, Database, Dna, FlaskConical, BarChart3 } from 'lucide-react';
 
 const toSlug = (name) => name.toLowerCase().trim().replace(/\s+/g, '-');
+const IMAGE_BASE = `${import.meta.env.BASE_URL}images`;
 
 const CROP_IMAGES = {
-  'Finger Millet': '/images/finger_millet.png',
-  'Foxtail Millet': '/images/foxtail_millet.png',
-  'Proso Millet': '/images/proso_millet.png',
-  'Pearl Millet': '/images/pearl_millet.png',
-  'Little Millet': '/images/little_millet.png',
-  'Barnyard Millet': '/images/barnyard_millet.png',
+  'Finger Millet': `${IMAGE_BASE}/finger_millet.png`,
+  'Foxtail Millet': `${IMAGE_BASE}/foxtail_millet.png`,
+  'Proso Millet': `${IMAGE_BASE}/proso_millet.png`,
+  'Pearl Millet': `${IMAGE_BASE}/pearl_millet.png`,
+  'Little Millet': `${IMAGE_BASE}/little_millet.png`,
+  'Barnyard Millet': `${IMAGE_BASE}/barnyard_millet.png`,
 };
 
 /* ---- Animated counter hook ---- */
@@ -121,7 +122,7 @@ function Home() {
             <Link to={`/crop/${toSlug(crop.name)}`} key={crop.id} className="millet-card">
               <div className="millet-card-img-wrap">
                 <img
-                  src={CROP_IMAGES[crop.name] || '/images/finger_millet.png'}
+                  src={CROP_IMAGES[crop.name] || `${IMAGE_BASE}/finger_millet.png`}
                   alt={crop.name}
                 />
               </div>

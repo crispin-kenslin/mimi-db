@@ -3,6 +3,29 @@ import axios from 'axios';
 import { Link, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, Search } from 'lucide-react';
 
+function formatCropLabel(cropSlug) {
+  if (!cropSlug) return '';
+  return cropSlug
+    .split('-')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
+function formatGeneName(geneName) {
+  if (!geneName) return '-';
+  if (!/[a-z]/.test(geneName)) return geneName;
+  return geneName
+    .replace(/[_-]+/g, ' ')
+    .replace(/\b([a-z])/g, (char) => char.toUpperCase());
+}
+
+function formatSeqId(seqId) {
+  if (!seqId) return '-';
+  const parts = seqId.split('|').filter(Boolean);
+  if (parts.length >= 2) return parts[1];
+  return seqId;
+}
+
 function ToolsBlast() {
   const [searchParams] = useSearchParams();
   const [genomes, setGenomes] = useState([]);
@@ -34,8 +57,10 @@ function ToolsBlast() {
     try {
       const response = await axios.post('/api/tools/blast', {
         sequence,
-        max_target_seqs: 25,
-        evalue: 1e-3,
+        max_target_seqs: 60,
+        evalue: 10,
+        min_identity: 90,
+        min_query_coverage: 60,
         crops: selectedCrops.length > 0 ? selectedCrops : null,
       });
       setBlastResult(response.data);
@@ -59,13 +84,13 @@ function ToolsBlast() {
   const fastaCrops = genomes.filter((g) => g.has_fasta).map((g) => g.crop);
 
   return (
-    <div className="fade-in">
+    <div className="fade-in blast-page">
       <div className="page-header">
         <h1>BLAST Search</h1>
         <p>Run BLASTn against one crop genome or all available crop genomes.</p>
       </div>
 
-      <section className="section" style={{ paddingTop: '1rem' }}>
+      <section className="section blast-section" style={{ paddingTop: '1rem' }}>
         <div style={{ marginBottom: '1rem' }}>
           <Link to="/tools" className="btn-outline btn-sm">
             <ArrowLeft size={14} /> Back to Tools
@@ -96,7 +121,7 @@ function ToolsBlast() {
                         checked={selectedCrops.includes(crop)}
                         onChange={() => toggleCrop(crop)}
                       />
-                      {crop}
+                      {formatCropLabel(crop)}
                     </label>
                   ))}
                 </div>
@@ -111,7 +136,7 @@ function ToolsBlast() {
                 rows={8}
                 required
                 style={{ width: '100%', border: '1px solid var(--gray-300)', borderRadius: 10, padding: '0.75rem', fontFamily: 'monospace', fontSize: '0.8rem' }}
-                placeholder=">query\nATGCT..."
+                placeholder="Input Sequence"
               />
               <div style={{ marginTop: '0.75rem' }}>
                 <button className="btn-primary" type="submit" disabled={blastLoading}>
@@ -129,39 +154,35 @@ function ToolsBlast() {
             {blastResult && (
               <div style={{ marginTop: '1rem' }}>
                 <p style={{ fontSize: '0.85rem', color: 'var(--gray-600)', marginBottom: '0.6rem' }}>
-                  Scope: <strong>{Array.isArray(blastResult.scope) ? blastResult.scope.join(', ') : blastResult.scope}</strong> | Task: <strong>{blastResult.task}</strong>
+                  Scope: <strong>{Array.isArray(blastResult.scope) ? blastResult.scope.map(formatCropLabel).join(', ') : blastResult.scope}</strong> | Task: <strong>{blastResult.task}</strong>
                 </p>
                 <p style={{ fontSize: '0.85rem', color: 'var(--gray-600)', marginBottom: '0.75rem' }}>
-                  Query length: <strong>{blastResult.query_length}</strong> bp | Total hits: <strong>{blastResult.total_hits}</strong>
+                  Query length: <strong>{blastResult.query_length}</strong> bp | Total hits: <strong>{blastResult.total_hits}</strong> | Filters: <strong>{blastResult.filters?.min_identity ?? 90}% identity, {blastResult.filters?.min_query_coverage ?? 60}% query coverage</strong>
                 </p>
-                <div style={{ overflowX: 'auto' }}>
-                  <table className="data-table">
+                <div className="blast-results-scroll">
+                  <table className="data-table blast-results-table">
                     <thead>
                       <tr>
                         <th>Crop</th>
-                        <th>Subject</th>
-                        <th>Gene ID</th>
+                        <th>Chromosome</th>
                         <th>Gene Name</th>
-                        <th>Function</th>
+                        <th>Protein Name</th>
                         <th>% Identity</th>
-                        <th>Align Len</th>
+                        <th>% Query Cov.</th>
                         <th>E-value</th>
-                        <th>Bit score</th>
-                        <th>Subject Range</th>
+                        <th>Range</th>
                       </tr>
                     </thead>
                     <tbody>
                       {blastResult.results.map((row, idx) => (
                         <tr key={`${row.crop}-${row.sseqid}-${idx}`}>
-                          <td>{row.crop}</td>
-                          <td style={{ fontFamily: 'monospace' }}>{row.sseqid}</td>
-                          <td style={{ fontFamily: 'monospace' }}>{row.gene_id || '-'}</td>
-                          <td>{row.gene_name || '-'}</td>
-                          <td>{row.function || '-'}</td>
+                          <td>{formatCropLabel(row.crop)}</td>
+                          <td style={{ fontFamily: 'monospace' }}>{formatSeqId(row.sseqid)}</td>
+                          <td>{formatGeneName(row.gene_name)}</td>
+                          <td>{row.product_name || '-'}</td>
                           <td>{row.pident.toFixed(2)}</td>
-                          <td>{row.length}</td>
+                          <td>{row.qcovs.toFixed(2)}</td>
                           <td>{row.evalue.toExponential(2)}</td>
-                          <td>{row.bitscore.toFixed(2)}</td>
                           <td style={{ fontFamily: 'monospace' }}>{row.sstart}-{row.send}</td>
                         </tr>
                       ))}

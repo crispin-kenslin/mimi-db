@@ -5,6 +5,8 @@ from pydantic import BaseModel, Field
 import gzip
 import shutil
 import subprocess
+import tempfile
+import os
 from functools import lru_cache
 
 from fastapi import APIRouter, HTTPException, Request
@@ -13,9 +15,9 @@ from ..services.data_catalog import DATA_DIR, build_genome_resources, preferred_
 
 router = APIRouter(prefix="/tools", tags=["tools"])
 
-BLAST_CACHE_DIR = Path(__file__).resolve().parents[3] / ".blast_cache"
+BLAST_CACHE_DIR = Path(os.getenv("MIMI_BLAST_CACHE_DIR", str(Path(tempfile.gettempdir()) / "mimi-db-blast-cache")))
 BLAST_CACHE_DIR.mkdir(parents=True, exist_ok=True)
-JBROWSE_CACHE_DIR = DATA_DIR / ".jbrowse-cache"
+JBROWSE_CACHE_DIR = Path(os.getenv("MIMI_JBROWSE_CACHE_DIR", str(DATA_DIR / ".jbrowse-cache")))
 JBROWSE_CACHE_DIR.mkdir(parents=True, exist_ok=True)
 PROJECT_BLAST_BIN = Path(__file__).resolve().parents[3] / "blast" / "bin"
 LOCAL_BLAST_BIN = Path(__file__).resolve().parents[3] / "tools" / "blast" / "ncbi-blast-2.17.0+" / "bin"
@@ -23,8 +25,10 @@ LOCAL_BLAST_BIN = Path(__file__).resolve().parents[3] / "tools" / "blast" / "ncb
 
 class BlastRequest(BaseModel):
     sequence: str = Field(..., min_length=10)
-    max_target_seqs: int = Field(default=20, ge=1, le=100)
-    evalue: float = Field(default=1e-5, gt=0)
+    max_target_seqs: int = Field(default=50, ge=1, le=200)
+    evalue: float = Field(default=10.0, gt=0)
+    min_identity: float = Field(default=90.0, ge=70.0, le=100.0)
+    min_query_coverage: float = Field(default=60.0, ge=10.0, le=100.0)
     crops: list[str] | None = None
     crop: str | None = None
     task: str | None = None
@@ -205,6 +209,19 @@ def _parse_attrs(attributes: str) -> dict[str, str]:
     return parsed
 
 
+def _split_csv_attr(value: str | None) -> list[str]:
+    if not value:
+        return []
+    return [item.strip() for item in value.split(",") if item and item.strip()]
+
+
+def _first_non_empty(*values: str | None) -> str | None:
+    for value in values:
+        if value:
+            return value
+    return None
+
+
 def _normalize_seqid(sseqid: str) -> list[str]:
     candidates = [sseqid]
     if "|" in sseqid:
@@ -216,7 +233,9 @@ def _normalize_seqid(sseqid: str) -> list[str]:
 
 @lru_cache(maxsize=128)
 def _gff_features_cached(gff_path: str, mtime_ns: int) -> dict[str, list[dict[str, object]]]:
-    features: dict[str, list[dict[str, object]]] = {}
+    _ = mtime_ns
+    raw_features: list[dict[str, object]] = []
+    by_id: dict[str, list[dict[str, object]]] = {}
     path = Path(gff_path)
     with _open_text(path) as handle:
         for line in handle:
@@ -228,38 +247,151 @@ def _gff_features_cached(gff_path: str, mtime_ns: int) -> dict[str, list[dict[st
                 continue
 
             feature_type = parts[2].lower()
-            if feature_type not in {"gene", "mrna", "transcript"}:
+            if feature_type not in {"gene", "mrna", "transcript", "cds", "exon"}:
                 continue
 
             seqid = parts[0]
             start = int(parts[3])
             end = int(parts[4])
+            source = parts[1]
+            strand = parts[6]
             attrs = _parse_attrs(parts[8])
 
-            gene_id = attrs.get("ID") or attrs.get("gene_id") or attrs.get("locus_tag")
-            gene_name = attrs.get("Name") or attrs.get("gene") or attrs.get("gene_name")
-            function = attrs.get("product") or attrs.get("description") or attrs.get("Note") or attrs.get("note")
+            feature = {
+                "seqid": seqid,
+                "start": start,
+                "end": end,
+                "feature_type": feature_type,
+                "source": source,
+                "strand": strand,
+                "id": attrs.get("ID"),
+                "parents": _split_csv_attr(attrs.get("Parent")),
+                "gene_id": _first_non_empty(attrs.get("gene_id"), attrs.get("gene"), attrs.get("locus_tag")),
+                "gene_name": _first_non_empty(attrs.get("Name"), attrs.get("gene_name"), attrs.get("gene"), attrs.get("locus_tag")),
+                "transcript_id": _first_non_empty(attrs.get("transcript_id"), attrs.get("orig_transcript_id")),
+                "protein_id": _first_non_empty(attrs.get("protein_id"), attrs.get("orig_protein_id")),
+                "product_name": attrs.get("product"),
+                "locus_tag": attrs.get("locus_tag"),
+                "gene_biotype": _first_non_empty(attrs.get("gene_biotype"), attrs.get("biotype")),
+                "function": _first_non_empty(attrs.get("product"), attrs.get("description"), attrs.get("Note"), attrs.get("note")),
+            }
 
-            features.setdefault(seqid, []).append(
-                {
-                    "start": start,
-                    "end": end,
-                    "gene_id": gene_id,
-                    "gene_name": gene_name,
-                    "function": function,
-                }
-            )
+            feature_id = feature.get("id")
+            if isinstance(feature_id, str) and feature_id:
+                by_id.setdefault(feature_id, []).append(feature)
+
+            raw_features.append(feature)
+
+    field_cache: dict[tuple[int, str], str | None] = {}
+
+    def _resolve_from_parents(feature: dict[str, object], field: str, seen: set[str]) -> str | None:
+        cache_key = (id(feature), field)
+        if cache_key in field_cache:
+            return field_cache[cache_key]
+
+        direct = feature.get(field)
+        if isinstance(direct, str) and direct:
+            field_cache[cache_key] = direct
+            return direct
+
+        if field == "gene_id":
+            feature_type = feature.get("feature_type")
+            feature_id = feature.get("id")
+            if feature_type == "gene" and isinstance(feature_id, str) and feature_id:
+                field_cache[cache_key] = feature_id
+                return feature_id
+
+        if field == "transcript_id":
+            feature_type = feature.get("feature_type")
+            feature_id = feature.get("id")
+            if feature_type in {"mrna", "transcript"} and isinstance(feature_id, str) and feature_id:
+                field_cache[cache_key] = feature_id
+                return feature_id
+
+        if field == "protein_id":
+            feature_id = feature.get("id")
+            if feature.get("feature_type") == "cds" and isinstance(feature_id, str) and feature_id:
+                field_cache[cache_key] = feature_id
+                return feature_id
+
+        parents = feature.get("parents")
+        if not isinstance(parents, list):
+            field_cache[cache_key] = None
+            return None
+
+        for parent_id in parents:
+            if not isinstance(parent_id, str) or not parent_id or parent_id in seen:
+                continue
+
+            candidates = by_id.get(parent_id, [])
+            for parent in candidates:
+                parent_seqid = parent.get("seqid")
+                if parent_seqid != feature.get("seqid"):
+                    continue
+                resolved = _resolve_from_parents(parent, field, seen | {parent_id})
+                if resolved:
+                    field_cache[cache_key] = resolved
+                    return resolved
+
+        field_cache[cache_key] = None
+        return None
+
+    features: dict[str, list[dict[str, object]]] = {}
+    for feature in raw_features:
+        seqid = feature.get("seqid")
+        if not isinstance(seqid, str) or not seqid:
+            continue
+
+        resolved_gene_id = _resolve_from_parents(feature, "gene_id", set())
+        resolved_gene_name = _resolve_from_parents(feature, "gene_name", set())
+        resolved_transcript_id = _resolve_from_parents(feature, "transcript_id", set())
+        resolved_protein_id = _resolve_from_parents(feature, "protein_id", set())
+        resolved_product_name = _resolve_from_parents(feature, "product_name", set())
+        resolved_locus_tag = _resolve_from_parents(feature, "locus_tag", set())
+        resolved_biotype = _resolve_from_parents(feature, "gene_biotype", set())
+        resolved_function = _resolve_from_parents(feature, "function", set())
+
+        features.setdefault(seqid, []).append(
+            {
+                "start": int(feature["start"]),
+                "end": int(feature["end"]),
+                "feature_type": feature.get("feature_type"),
+                "source": feature.get("source"),
+                "strand": feature.get("strand"),
+                "gene_id": resolved_gene_id,
+                "gene_name": resolved_gene_name,
+                "transcript_id": resolved_transcript_id,
+                "protein_id": resolved_protein_id,
+                "product_name": resolved_product_name,
+                "locus_tag": resolved_locus_tag,
+                "gene_biotype": resolved_biotype,
+                "function": resolved_function,
+            }
+        )
 
     for key in features:
-        features[key].sort(key=lambda row: int(row["start"]))
+        features[key].sort(key=lambda row: (int(row["start"]), int(row["end"])))
 
     return features
 
 
-def _annotate_hit(crop_slug: str, sseqid: str, sstart: int, send: int) -> dict[str, str | None]:
+def _annotate_hit(crop_slug: str, sseqid: str, sstart: int, send: int) -> dict[str, str | int | None]:
     gff = preferred_gff(crop_slug)
     if gff is None:
-        return {"gene_id": None, "gene_name": None, "function": None}
+        return {
+            "gene_id": None,
+            "gene_name": None,
+            "transcript_id": None,
+            "protein_id": None,
+            "product_name": None,
+            "locus_tag": None,
+            "gene_biotype": None,
+            "function": None,
+            "feature_type": None,
+            "feature_source": None,
+            "strand": None,
+            "annotation_distance_bp": None,
+        }
 
     stat = gff.stat()
     features_map = _gff_features_cached(str(gff.resolve()), stat.st_mtime_ns)
@@ -267,22 +399,54 @@ def _annotate_hit(crop_slug: str, sseqid: str, sstart: int, send: int) -> dict[s
     hit_start = min(sstart, send)
     hit_end = max(sstart, send)
 
+    feature_priority = {
+        "cds": 5,
+        "mrna": 4,
+        "transcript": 4,
+        "gene": 3,
+        "exon": 2,
+    }
+
+    def _format_feature(feat: dict[str, object], annotation_distance_bp: int | None = None) -> dict[str, str | int | None]:
+        return {
+            "gene_id": feat.get("gene_id") if isinstance(feat.get("gene_id"), str) else None,
+            "gene_name": feat.get("gene_name") if isinstance(feat.get("gene_name"), str) else None,
+            "transcript_id": feat.get("transcript_id") if isinstance(feat.get("transcript_id"), str) else None,
+            "protein_id": feat.get("protein_id") if isinstance(feat.get("protein_id"), str) else None,
+            "product_name": feat.get("product_name") if isinstance(feat.get("product_name"), str) else None,
+            "locus_tag": feat.get("locus_tag") if isinstance(feat.get("locus_tag"), str) else None,
+            "gene_biotype": feat.get("gene_biotype") if isinstance(feat.get("gene_biotype"), str) else None,
+            "function": feat.get("function") if isinstance(feat.get("function"), str) else None,
+            "feature_type": feat.get("feature_type") if isinstance(feat.get("feature_type"), str) else None,
+            "feature_source": feat.get("source") if isinstance(feat.get("source"), str) else None,
+            "strand": feat.get("strand") if isinstance(feat.get("strand"), str) else None,
+            "annotation_distance_bp": annotation_distance_bp,
+        }
+
     for candidate_seqid in _normalize_seqid(sseqid):
         seq_features = features_map.get(candidate_seqid)
         if not seq_features:
             continue
 
+        best_overlap = None
+        best_score = None
         for feat in seq_features:
             feat_start = int(feat["start"])
             feat_end = int(feat["end"])
             if feat_end < hit_start or feat_start > hit_end:
                 continue
 
-            return {
-                "gene_id": feat.get("gene_id") if isinstance(feat.get("gene_id"), str) else None,
-                "gene_name": feat.get("gene_name") if isinstance(feat.get("gene_name"), str) else None,
-                "function": feat.get("function") if isinstance(feat.get("function"), str) else None,
-            }
+            overlap_start = max(hit_start, feat_start)
+            overlap_end = min(hit_end, feat_end)
+            overlap_len = max(0, overlap_end - overlap_start + 1)
+            feature_type = feat.get("feature_type") if isinstance(feat.get("feature_type"), str) else ""
+            score = (feature_priority.get(feature_type, 0), overlap_len)
+            if best_score is None or score > best_score:
+                best_score = score
+                best_overlap = feat
+
+        if best_overlap is not None:
+            return _format_feature(best_overlap)
 
         # If the hit is intergenic, attach the nearest annotated feature.
         nearest = None
@@ -300,20 +464,22 @@ def _annotate_hit(crop_slug: str, sseqid: str, sstart: int, send: int) -> dict[s
                 nearest = feat
 
         if nearest is not None:
-            nearest_note = f"Nearest feature (distance {nearest_distance} bp)"
-            function_value = nearest.get("function") if isinstance(nearest.get("function"), str) else None
-            return {
-                "gene_id": nearest.get("gene_id") if isinstance(nearest.get("gene_id"), str) else None,
-                "gene_name": nearest.get("gene_name") if isinstance(nearest.get("gene_name"), str) else None,
-                "function": function_value or nearest_note,
-            }
+            return _format_feature(nearest, annotation_distance_bp=nearest_distance)
 
-    return {"gene_id": None, "gene_name": None, "function": None}
-
-
-def _absolute_data_url(request: Request, path: Path) -> str:
-    base = str(request.base_url).rstrip("/")
-    return f"{base}{to_data_url(path)}"
+    return {
+        "gene_id": None,
+        "gene_name": None,
+        "transcript_id": None,
+        "protein_id": None,
+        "product_name": None,
+        "locus_tag": None,
+        "gene_biotype": None,
+        "function": None,
+        "feature_type": None,
+        "feature_source": None,
+        "strand": None,
+        "annotation_distance_bp": None,
+    }
 
 
 def _db_prefix(crop_slug: str, fasta_file: Path) -> Path:
@@ -420,11 +586,11 @@ def jbrowse_runtime_config(crop_slug: str, request: Request):
 
     assembly_adapter = {
         "type": "IndexedFastaAdapter",
-        "fastaLocation": {"uri": _absolute_data_url(request, prepared_fasta)},
-        "faiLocation": {"uri": _absolute_data_url(request, fai)},
+        "fastaLocation": {"uri": to_data_url(prepared_fasta)},
+        "faiLocation": {"uri": to_data_url(fai)},
     }
     if gzi.exists():
-        assembly_adapter["gziLocation"] = {"uri": _absolute_data_url(request, gzi)}
+        assembly_adapter["gziLocation"] = {"uri": to_data_url(gzi)}
 
     config = {
         "assemblies": [
@@ -458,14 +624,14 @@ def jbrowse_runtime_config(crop_slug: str, request: Request):
     if gff and gff_tbi and gff_tbi.exists():
         adapter = {
             "type": "Gff3TabixAdapter",
-            "gffGzLocation": {"uri": _absolute_data_url(request, gff)},
-            "index": {"location": {"uri": _absolute_data_url(request, gff_tbi)}, "indexType": "TBI"},
+            "gffGzLocation": {"uri": to_data_url(gff)},
+            "index": {"location": {"uri": to_data_url(gff_tbi)}, "indexType": "TBI"},
         }
     elif gff:
         prepared_gff = _prepare_jbrowse_gff(crop_slug, gff)
         adapter = {
             "type": "Gff3Adapter",
-            "gffLocation": {"uri": _absolute_data_url(request, prepared_gff)},
+            "gffLocation": {"uri": to_data_url(prepared_gff)},
         }
     else:
         adapter = None
@@ -512,7 +678,7 @@ def blast_against_all_crops(payload: BlastRequest):
     query_fasta = BLAST_CACHE_DIR / "query.tmp.fa"
     query_fasta.write_text(f">query\n{query_seq}\n", encoding="utf-8")
 
-    outfmt = "6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore"
+    outfmt = "6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qcovs"
 
     for resource in resources:
         db_prefix = _ensure_blast_db(resource.crop_slug, resource.fasta_file)
@@ -530,6 +696,8 @@ def blast_against_all_crops(payload: BlastRequest):
             str(payload.max_target_seqs),
             "-evalue",
             str(payload.evalue),
+            "-perc_identity",
+            str(payload.min_identity),
         ]
         if blast_task == "blastn-short":
             cmd.extend(["-dust", "no"])
@@ -539,7 +707,10 @@ def blast_against_all_crops(payload: BlastRequest):
 
         for line in proc.stdout.splitlines():
             cols = line.split("\t")
-            if len(cols) != 12:
+            if len(cols) != 13:
+                continue
+            qcovs = float(cols[12])
+            if qcovs < payload.min_query_coverage:
                 continue
             annotation = _annotate_hit(resource.crop_slug, cols[1], int(cols[8]), int(cols[9]))
             results.append(
@@ -557,15 +728,22 @@ def blast_against_all_crops(payload: BlastRequest):
                     "send": int(cols[9]),
                     "evalue": float(cols[10]),
                     "bitscore": float(cols[11]),
+                    "qcovs": qcovs,
                     **annotation,
                 }
             )
 
-    results.sort(key=lambda row: (-row["bitscore"], row["evalue"], -row["pident"]))
+    results.sort(key=lambda row: (-row["bitscore"], row["evalue"], -row["pident"], -row["qcovs"]))
     return {
         "query_length": len(query_seq),
         "task": blast_task,
         "scope": sorted(selected_crops) if selected_crops else "all",
+        "filters": {
+            "min_identity": payload.min_identity,
+            "min_query_coverage": payload.min_query_coverage,
+            "evalue": payload.evalue,
+            "max_target_seqs": payload.max_target_seqs,
+        },
         "total_hits": len(results),
         "results": results,
     }

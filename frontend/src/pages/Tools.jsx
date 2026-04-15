@@ -17,7 +17,7 @@ function Tools() {
           </div>
           <h3>JBrowse Genome Browser</h3>
           <p>
-            Browse reference sequences and gene annotations using your local JBrowse web build with dynamic crop config.
+            Browse reference sequences and gene annotations using JBrowse.
           </p>
           <span className="badge badge-green">Open JBrowse</span>
         </Link>
@@ -28,7 +28,7 @@ function Tools() {
           </div>
           <h3>BLAST Search</h3>
           <p>
-            Run BLASTn against one crop or all crops using your local BLAST+ installation and genomes in each crop folder.
+            Run BLASTn against one or more Minor Millets.
           </p>
           <span className="badge badge-green">Open BLAST</span>
         </Link>

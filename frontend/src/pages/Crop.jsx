@@ -133,8 +133,8 @@ function Crop() {
               </div>
               <div className="info-panel-body" style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
                 <a href={cropFtpIndexUrl} className="btn-outline btn-sm"><ExternalLink size={14} /> Open Crop File Index</a>
-                <Link to={`/tools/jbrowse?crop=${cropSlug}`} className="btn-primary btn-sm"><Dna size={14} /> Open JBrowse</Link>
-                <Link to={`/tools/blast?crop=${cropSlug}`} className="btn-outline btn-sm"><Dna size={14} /> Open BLAST</Link>
+                <Link to={`/tools/jbrowse`} className="btn-primary btn-sm"><Dna size={14} /> Open JBrowse</Link>
+                <Link to={`/tools/blast`} className="btn-outline btn-sm"><Dna size={14} /> Open BLAST</Link>
               </div>
             </div>
 

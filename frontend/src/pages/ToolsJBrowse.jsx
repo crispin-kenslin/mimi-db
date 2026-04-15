@@ -3,6 +3,14 @@ import axios from 'axios';
 import { Link, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, Dna, ExternalLink } from 'lucide-react';
 
+function formatCropLabel(cropSlug) {
+  if (!cropSlug) return '';
+  return cropSlug
+    .split('-')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
 function ToolsJBrowse() {
   const [searchParams] = useSearchParams();
   const [genomes, setGenomes] = useState([]);
@@ -31,19 +39,18 @@ function ToolsJBrowse() {
 
   const jbrowseUrl = useMemo(() => {
     if (!selectedCrop) return '';
-    const backendBase = `${window.location.protocol}//${window.location.hostname}:8000`;
-    const configUrl = `${backendBase}/tools/jbrowse/${selectedCrop}/config.json`;
-    return `${backendBase}/jbrowse/index.html?config=${encodeURIComponent(configUrl)}`;
+    const appOrigin = window.location.origin;
+    const configUrl = `${appOrigin}/api/tools/jbrowse/${selectedCrop}/config.json`;
+    return `${appOrigin}/jbrowse/index.html?config=${encodeURIComponent(configUrl)}`;
   }, [selectedCrop]);
 
   return (
-    <div className="fade-in">
+    <div className="fade-in jbrowse-page">
       <div className="page-header">
         <h1>JBrowse Genome Browser</h1>
-        <p>Powered by your local JBrowse web build and configured dynamically from crop FASTA/GFF files.</p>
       </div>
 
-      <section className="section" style={{ paddingTop: '1rem' }}>
+      <section className="section jbrowse-section" style={{ paddingTop: '1rem' }}>
         <div style={{ marginBottom: '1rem' }}>
           <Link to="/tools" className="btn-outline btn-sm">
             <ArrowLeft size={14} /> Back to Tools
@@ -61,7 +68,7 @@ function ToolsJBrowse() {
                 style={{ padding: '0.5rem 0.75rem', border: '1px solid var(--gray-300)', borderRadius: 8 }}
               >
                 {genomes.filter((g) => g.has_fasta).map((g) => (
-                  <option key={g.crop} value={g.crop}>{g.crop}</option>
+                  <option key={g.crop} value={g.crop}>{formatCropLabel(g.crop)}</option>
                 ))}
               </select>
               {selectedCrop && (
@@ -77,6 +84,7 @@ function ToolsJBrowse() {
           <iframe
             title="JBrowse"
             src={jbrowseUrl}
+            className="jbrowse-frame"
             style={{ width: '100%', height: 620, border: '1px solid var(--gray-200)', borderRadius: 10, background: '#fff' }}
           />
         )}
