@@ -29,7 +29,7 @@ def read_transcriptomics(crop_id: int, db: Session = Depends(get_db)):
 def get_available_stresses(crop_name: str):
     """List available stress types for a crop based on CSV files"""
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    base_path = os.path.normpath(os.path.join(current_dir, '..', '..', 'data'))
+    base_path = os.path.normpath(os.path.join(current_dir, '..', '..', '..', 'data'))
     transcriptomics_dir = os.path.normpath(os.path.join(base_path, crop_name, 'transcriptomics'))
 
     if not os.path.exists(transcriptomics_dir):
@@ -58,7 +58,7 @@ def get_available_stresses(crop_name: str):
 @transcriptomics_router.get("/csv/{crop_name}/{stress_type}")
 def get_deg_csv(crop_name: str, stress_type: str):
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    base_path = os.path.normpath(os.path.join(current_dir, '..', '..', 'data'))
+    base_path = os.path.normpath(os.path.join(current_dir, '..', '..', '..', 'data'))
 
     possible_names = [
         f'{crop_name}-{stress_type}.csv',
