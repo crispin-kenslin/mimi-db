@@ -1,20 +1,26 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
-import { ArrowLeft, Download, Dna, ExternalLink, Info } from 'lucide-react';
+import { ArrowLeft, Download, Dna, ExternalLink, Info, Database, Droplets, Sun, Zap } from 'lucide-react';
 import FileListModal from '../components/FileListModal';
 
 const toSlug = (name) => name.toLowerCase().trim().replace(/\s+/g, '-');
 
+const STRESS_ICONS = {
+  drought: <Droplets size={32} />,
+  heat: <Sun size={32} />,
+  salt: <Zap size={32} />,
+  salty: <Zap size={32} />,
+};
+
 function Crop() {
   const { slug } = useParams();
   const [crop, setCrop] = useState(null);
-  const [activeTab, setActiveTab] = useState('Overview');
-  const [genomicsTab, setGenomicsTab] = useState('genomics');
   const [loading, setLoading] = useState(true);
+  const [stresses, setStresses] = useState([]);
+  const [stressesLoading, setStressesLoading] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalConfig, setModalConfig] = useState({ cropName: '', dataType: '', title: '' });
-  const [genomeInfo, setGenomeInfo] = useState(null);
 
   useEffect(() => {
     const fetchCropData = async () => {
@@ -31,17 +37,21 @@ function Crop() {
   }, [slug]);
 
   useEffect(() => {
-    const fetchGenomeInfo = async () => {
-      if (!crop?.name) return;
+    const fetchStresses = async () => {
+      if (!crop) return;
       try {
+        setStressesLoading(true);
         const cropSlug = toSlug(crop.name);
-        const response = await axios.get(`/api/tools/jbrowse/${cropSlug}`);
-        setGenomeInfo(response.data);
-      } catch {
-        setGenomeInfo(null);
+        const response = await axios.get(`/api/transcriptomics/stresses/${cropSlug}`);
+        setStresses(response.data);
+      } catch (error) {
+        console.error('Error fetching stresses:', error);
+        setStresses([]);
+      } finally {
+        setStressesLoading(false);
       }
     };
-    fetchGenomeInfo();
+    fetchStresses();
   }, [crop]);
 
   const openFileModal = (dataType, title) => {
@@ -57,7 +67,7 @@ function Crop() {
   const cropFtpIndexUrl = `/api/files/ftp/${cropSlug}`;
 
   return (
-    <div className="fade-in">
+    <div className="fade-in crop-page">
       <FileListModal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
@@ -66,107 +76,118 @@ function Crop() {
         title={modalConfig.title}
       />
 
-      <section className="hero-section" style={{ padding: '2.5rem 2rem 2rem' }}>
-        <div className="hero-inner">
-          <Link to="/" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', color: 'var(--primary-200)', fontSize: '0.85rem', marginBottom: '1rem' }}>
-            <ArrowLeft size={16} /> Back to all millets
-          </Link>
-          <h1 className="hero-title" style={{ fontSize: '2.25rem', marginBottom: '0.5rem' }}>{crop.name}</h1>
-          <p style={{ fontSize: '1.15rem', fontStyle: 'italic', color: 'var(--primary-300)', marginBottom: '1.5rem' }}>{crop.scientific_name}</p>
-          <div className="hero-stats">
-            <div className="hero-stat">
-              <div className="hero-stat-value">{crop.chromosome_number || '—'}</div>
-              <div className="hero-stat-label">Chromosomes</div>
-            </div>
-            <div className="hero-stat">
-              <div className="hero-stat-value">{crop.genome_size_mb || '—'}</div>
-              <div className="hero-stat-label">Genome Size (Mb)</div>
-            </div>
-            <div className="hero-stat">
-              <div className="hero-stat-value">{genomeInfo?.tracks?.length || 0}</div>
-              <div className="hero-stat-label">Annotation Tracks</div>
+      {/* Header Section */}
+      <section className="crop-header">
+        <Link to="/" className="crop-back-link">
+          <ArrowLeft size={18} /> Back to Millets
+        </Link>
+        <h1 className="crop-title">{crop.name}</h1>
+        <p className="crop-scientific-name">{crop.scientific_name}</p>
+        <p className="crop-description">{crop.description || 'No description available.'}</p>
+      </section>
+
+      {/* Quick Access Section */}
+      <section className="crop-section quick-access">
+        <div className="section-inner">
+          <div className="quick-access-grid">
+            <a href={cropFtpIndexUrl} className="quick-access-card">
+              <div className="card-icon"><Download size={32} /></div>
+              <div className="card-content">
+                <h3>Download Files</h3>
+                <p>Browse all crop data</p>
+              </div>
+            </a>
+            <Link to={`/tools/jbrowse`} className="quick-access-card">
+              <div className="card-icon"><Dna size={32} /></div>
+              <div className="card-content">
+                <h3>Genome Browser</h3>
+                <p>Explore JBrowse</p>
+              </div>
+            </Link>
+            <Link to={`/tools/blast`} className="quick-access-card">
+              <div className="card-icon"><Database size={32} /></div>
+              <div className="card-content">
+                <h3>BLAST Search</h3>
+                <p>Sequence similarity</p>
+              </div>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Genomics Section */}
+      <section className="crop-section genomics-section">
+        <div className="section-inner">
+          <h2 className="section-title"><Dna size={24} /> Genomics Data</h2>
+          <div className="data-subsection">
+            <h3 className="subsection-title">Genome Information</h3>
+            <div className="info-grid">
+              <div className="info-item">
+                <span className="info-label">Chromosomes</span>
+                <span className="info-value">{crop.chromosome_number || '—'}</span>
+              </div>
+              <div className="info-item">
+                <span className="info-label">Genome Size</span>
+                <span className="info-value">{crop.genome_size_mb || '—'} Mb</span>
+              </div>
+              <div className="info-item">
+                <span className="info-label">Family</span>
+                <span className="info-value">{crop.family || '—'}</span>
+              </div>
+              <div className="info-item">
+                <span className="info-label">Ploidy Level</span>
+                <span className="info-value">{crop.ploidy_level || '—'}</span>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      <div className="tabs-container">
-        <div className="tabs-inner">
-          {['Overview', 'Genomics'].map((tab) => (
-            <button
-              key={tab}
-              className={`tab-btn ${activeTab === tab ? 'active' : ''}`}
-              onClick={() => setActiveTab(tab)}
-            >
-              {tab}
-            </button>
-          ))}
-        </div>
-      </div>
+      {/* Transcriptomics Section */}
+      <section className="crop-section transcriptomics-section">
+        <div className="section-inner">
+          <h2 className="section-title"><Dna size={24} /> Transcriptomics Data</h2>
 
-      <div className="section fade-in" key={activeTab}>
-        {activeTab === 'Overview' && (
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1.25rem' }}>
-            <div className="info-panel">
-              <div className="info-panel-header"><Info size={16} /> Description</div>
-              <div className="info-panel-body">
-                <p style={{ fontSize: '0.95rem', lineHeight: 1.8, color: 'var(--gray-700)' }}>{crop.description || 'No description available.'}</p>
-              </div>
-            </div>
-
-            <div className="info-panel">
-              <div className="info-panel-header"><Dna size={16} /> Botanical and Genome Profile</div>
-              <div className="info-panel-body">
-                <div className="info-row"><span className="info-label">Family</span><span className="info-value">{crop.family || '—'}</span></div>
-                <div className="info-row"><span className="info-label">Ploidy</span><span className="info-value">{crop.ploidy_level || '—'}</span></div>
-                <div className="info-row"><span className="info-label">Common Names</span><span className="info-value">{crop.common_names || '—'}</span></div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'Genomics' && (
-          <div>
-            <div className="info-panel" style={{ marginBottom: '1.5rem', background: 'linear-gradient(135deg, #ecfdf5 0%, #ffffff 100%)', border: '2px solid var(--primary-200)' }}>
-              <div className="info-panel-header" style={{ background: 'var(--primary-600)', color: 'white', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Download size={18} /> Downloads and Genome Browser
-              </div>
-              <div className="info-panel-body" style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-                <a href={cropFtpIndexUrl} className="btn-outline btn-sm"><ExternalLink size={14} /> Open Crop File Index</a>
-                <Link to={`/tools/jbrowse`} className="btn-primary btn-sm"><Dna size={14} /> Open JBrowse</Link>
-                <Link to={`/tools/blast`} className="btn-outline btn-sm"><Dna size={14} /> Open BLAST</Link>
-              </div>
-            </div>
-
-            <div className="tabs-inner" style={{ marginBottom: '1rem' }}>
-              {['genomics', 'transcriptomics', 'metabolomics', 'other'].map((tab) => (
-                <button
-                  key={tab}
-                  className={`tab-btn ${genomicsTab === tab ? 'active' : ''}`}
-                  onClick={() => setGenomicsTab(tab)}
+          {stressesLoading ? (
+            <div className="loader-wrapper"><div className="loader"></div></div>
+          ) : stresses.length > 0 ? (
+            <div className="stress-cards-grid">
+              {stresses.map((stress) => (
+                <Link
+                  key={stress.type}
+                  to={`/crop/${cropSlug}/stress/${stress.type}`}
+                  className="stress-card"
                 >
-                  {tab.charAt(0).toUpperCase() + tab.slice(1)}
-                </button>
+                  <div className="stress-icon">
+                    {STRESS_ICONS[stress.type] || <Droplets size={32} />}
+                  </div>
+                  <div className="stress-content">
+                    <h3>{stress.name}</h3>
+                    <p>View DEG Analysis</p>
+                  </div>
+                </Link>
               ))}
             </div>
+          ) : (
+            <div className="no-data-message">No transcriptomics data available for this crop.</div>
+          )}
+        </div>
+      </section>
 
-            <div className="info-panel">
-              <div className="info-panel-header"><Download size={16} /> {genomicsTab.charAt(0).toUpperCase() + genomicsTab.slice(1)} Files</div>
-              <div className="info-panel-body">
-                <p style={{ marginBottom: '1rem', color: 'var(--gray-600)', fontSize: '0.9rem' }}>
-                  Browse and download all files from the {genomicsTab} directory for {crop.name}.
-                </p>
-                <button
-                  onClick={() => openFileModal(genomicsTab, `${crop.name} - ${genomicsTab} files`)}
-                  className="btn-primary btn-sm"
-                >
-                  <Download size={14} /> Browse {genomicsTab} files
-                </button>
-              </div>
-            </div>
+      {/* Metabolomics Section */}
+      <section className="crop-section metabolomics-section">
+        <div className="section-inner">
+          <div className="section-header">
+            <h2 className="section-title">Metabolomics Data</h2>
+            <button
+              onClick={() => openFileModal('metabolomics', `${crop.name} - Metabolomics files`)}
+              className="btn-primary btn-sm"
+            >
+              <Download size={14} /> Browse Files
+            </button>
           </div>
-        )}
-      </div>
+        </div>
+      </section>
     </div>
   );
 }

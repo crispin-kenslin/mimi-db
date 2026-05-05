@@ -4,6 +4,7 @@ import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Home from './pages/Home';
 import Crop from './pages/Crop';
+import DEGAnalysis from './pages/DEGAnalysis';
 import Search from './pages/Search';
 import Tools from './pages/Tools';
 import ToolsJBrowse from './pages/ToolsJBrowse';
@@ -20,6 +21,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/crop/:slug" element={<Crop />} />
+            <Route path="/crop/:cropSlug/stress/:stressType" element={<DEGAnalysis />} />
             <Route path="/search" element={<Search />} />
             <Route path="/tools" element={<Tools />} />
             <Route path="/tools/jbrowse" element={<ToolsJBrowse />} />

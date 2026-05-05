@@ -27,6 +27,7 @@ app.add_middleware(
 app.include_router(crops.router)
 app.include_router(genomics.router)
 app.include_router(transcriptomics.router)
+app.include_router(transcriptomics.transcriptomics_router)
 app.include_router(metabolomics.router)
 app.include_router(files.router)
 app.include_router(stats.router)
