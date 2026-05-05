@@ -67,7 +67,7 @@ function DEGAnalysis() {
           ) : degStats ? (
             <div className="deg-stats-grid">
               <div className="deg-stat-card">
-                <div className="stat-icon total"><BarChart3 size={28} /></div>
+                <div className="stat-icon total"><span></span></div>
                 <div className="stat-content">
                   <div className="stat-value">{degStats.total}</div>
                   <div className="stat-label">Total Genes</div>
@@ -75,7 +75,7 @@ function DEGAnalysis() {
               </div>
 
               <div className="deg-stat-card upregulated">
-                <div className="stat-icon"><span>↑</span></div>
+                <div className="stat-icon"><span></span></div>
                 <div className="stat-content">
                   <div className="stat-value">{degStats.upregulated}</div>
                   <div className="stat-label">Upregulated</div>
@@ -86,7 +86,7 @@ function DEGAnalysis() {
               </div>
 
               <div className="deg-stat-card downregulated">
-                <div className="stat-icon"><span>↓</span></div>
+                <div className="stat-icon"><span></span></div>
                 <div className="stat-content">
                   <div className="stat-value">{degStats.downregulated}</div>
                   <div className="stat-label">Downregulated</div>
@@ -97,7 +97,7 @@ function DEGAnalysis() {
               </div>
 
               <div className="deg-stat-card significant">
-                <div className="stat-icon"><span>*</span></div>
+                <div className="stat-icon"><span></span></div>
                 <div className="stat-content">
                   <div className="stat-value">{degStats.significant}</div>
                   <div className="stat-label">Significant (padj &lt; 0.05)</div>

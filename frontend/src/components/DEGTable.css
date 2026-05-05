@@ -42,39 +42,41 @@
   align-items: center;
   flex-wrap: nowrap;
   width: 100%;
+  justify-content: space-between;
 }
 
 .deg-search {
   flex: 1;
-  min-width: 200px;
+  min-width: 300px;
   padding: 0.65rem 0.85rem;
-  border: 1px solid var(--gray-300);
-  border-radius: 6px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
   font-size: 0.9rem;
   transition: all 0.2s;
 }
 
 .deg-search:focus {
   outline: none;
-  border-color: var(--primary-400);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  border-color: #333;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
 }
 
 .filter-toggle-btn {
   padding: 0.65rem 1.2rem;
-  background: var(--primary-600);
+  background: #333;
   color: white;
   border: none;
-  border-radius: 6px;
+  border-radius: 4px;
   font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .filter-toggle-btn:hover {
-  background: var(--primary-700);
+  background: #444;
 }
 
 .deg-filters {
@@ -130,19 +132,19 @@
 }
 
 .filter-btn.active {
-  background: var(--primary-600);
+  background: #333;
   color: white;
-  border-color: var(--primary-600);
+  border-color: #333;
 }
 
 .filter-btn.upregulated.active {
-  background: #dc2626;
-  border-color: #dc2626;
+  background: #22c55e;
+  border-color: #22c55e;
 }
 
 .filter-btn.downregulated.active {
-  background: #2563eb;
-  border-color: #2563eb;
+  background: #dc2626;
+  border-color: #dc2626;
 }
 
 .filter-slider {
@@ -210,12 +212,13 @@
 }
 
 .deg-table thead {
-  background: var(--primary-600);
-  color: white;
+  background: #f5f5f5;
+  color: #333;
   position: relative;
   z-index: 10;
   display: table-header-group;
   width: 100%;
+  border-bottom: 1px solid #ddd;
 }
 
 .deg-table th {
@@ -226,6 +229,8 @@
   overflow: hidden;
   text-overflow: ellipsis;
   word-break: normal;
+  color: #333;
+  font-size: 0.9rem;
 }
 
 .deg-table th.sortable {
@@ -257,11 +262,11 @@
 }
 
 .deg-table tbody tr.upregulated {
-  border-left: 3px solid #dc2626;
+  background-color: #f0fdf4;
 }
 
 .deg-table tbody tr.downregulated {
-  border-left: 3px solid #2563eb;
+  background-color: #fef2f2;
 }
 
 .gene-name {
@@ -275,11 +280,13 @@
 }
 
 .fold-change.positive {
-  color: #dc2626;
+  color: #22c55e;
+  font-weight: 700;
 }
 
 .fold-change.negative {
-  color: #2563eb;
+  color: #dc2626;
+  font-weight: 700;
 }
 
 .chr-col {

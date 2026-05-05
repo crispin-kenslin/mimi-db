@@ -1427,6 +1427,8 @@ button { cursor: pointer; font-family: inherit; }
   margin-bottom: 2rem;
   position: relative;
   overflow: hidden;
+  width: 100vw;
+  margin-left: calc(-50vw + 50%);
 }
 
 .deg-header::before {
@@ -1438,13 +1440,6 @@ button { cursor: pointer; font-family: inherit; }
   bottom: 0;
   background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 400"><defs><pattern id="grid" width="80" height="80" patternUnits="userSpaceOnUse"><path d="M 80 0 L 0 0 0 80" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1"/></pattern></defs><rect width="1000" height="400" fill="url(%23grid)"/></svg>');
   pointer-events: none;
-}
-
-.deg-header {
-  position: relative;
-  max-width: 1320px;
-  margin-left: auto;
-  margin-right: auto;
 }
 
 .deg-back-link {
@@ -1495,7 +1490,7 @@ button { cursor: pointer; font-family: inherit; }
   padding: 1.5rem;
   background: white;
   border-radius: var(--radius-lg);
-  border-left: 4px solid var(--primary-600);
+  border-left: none;
   box-shadow: var(--shadow-sm);
   transition: all 0.3s ease;
 }
@@ -1505,17 +1500,6 @@ button { cursor: pointer; font-family: inherit; }
   box-shadow: var(--shadow-md);
 }
 
-.deg-stat-card.upregulated {
-  border-left-color: #dc2626;
-}
-
-.deg-stat-card.downregulated {
-  border-left-color: #2563eb;
-}
-
-.deg-stat-card.significant {
-  border-left-color: #f59e0b;
-}
 
 .stat-icon {
   display: flex;
@@ -1523,32 +1507,12 @@ button { cursor: pointer; font-family: inherit; }
   justify-content: center;
   width: 60px;
   height: 60px;
-  background: var(--primary-100);
-  color: var(--primary-700);
+  background: var(--gray-100);
+  color: var(--gray-700);
   border-radius: var(--radius-md);
   flex-shrink: 0;
   font-size: 1.5rem;
   font-weight: bold;
-}
-
-.stat-icon.total {
-  background: linear-gradient(135deg, var(--primary-100), var(--primary-50));
-  color: var(--primary-700);
-}
-
-.deg-stat-card.upregulated .stat-icon {
-  background: #fee2e2;
-  color: #dc2626;
-}
-
-.deg-stat-card.downregulated .stat-icon {
-  background: #dbeafe;
-  color: #2563eb;
-}
-
-.deg-stat-card.significant .stat-icon {
-  background: #fef3c7;
-  color: #f59e0b;
 }
 
 .stat-content {
