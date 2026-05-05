@@ -3,6 +3,9 @@
   border-radius: 8px;
   overflow: hidden;
   border: 1px solid var(--gray-200);
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 350px);
 }
 
 .deg-stats {
@@ -28,6 +31,7 @@
 .deg-controls {
   padding: 1rem 1.25rem;
   border-bottom: 1px solid var(--gray-200);
+  flex-shrink: 0;
 }
 
 .deg-search-bar {
@@ -183,7 +187,9 @@
 
 .deg-table-wrapper {
   overflow-x: auto;
-  max-height: 600px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
   overflow-y: auto;
 }
 
@@ -191,6 +197,7 @@
   width: 100%;
   border-collapse: collapse;
   font-size: 0.85rem;
+  table-layout: auto;
 }
 
 .deg-table thead {
@@ -199,13 +206,18 @@
   position: sticky;
   top: 0;
   z-index: 10;
+  display: table;
+  width: 100%;
+  table-layout: auto;
 }
 
 .deg-table th {
   padding: 0.85rem;
   text-align: left;
   font-weight: 600;
-  white-space: nowrap;
+  white-space: normal;
+  word-break: break-word;
+  min-width: 80px;
 }
 
 .deg-table th.sortable {
@@ -215,6 +227,10 @@
   align-items: center;
   gap: 0.35rem;
   padding: 0.85rem;
+}
+
+.deg-table tbody {
+  display: table-row-group;
 }
 
 .deg-table th.sortable:hover {
@@ -300,6 +316,10 @@
   text-align: center;
   color: var(--gray-500);
   background: var(--gray-50);
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .deg-footer {
@@ -309,6 +329,7 @@
   color: var(--gray-600);
   font-size: 0.85rem;
   text-align: right;
+  flex-shrink: 0;
 }
 
 @media (max-width: 768px) {

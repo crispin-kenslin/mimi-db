@@ -1415,6 +1415,9 @@ button { cursor: pointer; font-family: inherit; }
    =========================== */
 .deg-analysis-page {
   background: var(--white);
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
 
 .deg-header {
@@ -1474,6 +1477,7 @@ button { cursor: pointer; font-family: inherit; }
   padding: 2rem;
   background: var(--gray-50);
   border-bottom: 2px solid var(--gray-200);
+  flex-shrink: 0;
 }
 
 .deg-stats-grid {
@@ -1576,12 +1580,15 @@ button { cursor: pointer; font-family: inherit; }
 /* DEG Table Section */
 .deg-table-section {
   padding: 2rem;
-  max-width: 1320px;
-  margin: 0 auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 .deg-table-section .section-title {
   margin-bottom: 1.5rem;
+  flex-shrink: 0;
 }
 
 /* Stress Cards */

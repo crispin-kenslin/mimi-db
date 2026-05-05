@@ -114,12 +114,6 @@ function DEGTable({ cropName, stressType }) {
 
   return (
     <div className="deg-container">
-      <div className="deg-stats">
-        <div className="deg-stat"><strong>{data.length}</strong> Total Genes</div>
-        <div className="deg-stat" style={{ color: '#dc2626' }}><strong>{upregulated}</strong> Upregulated</div>
-        <div className="deg-stat" style={{ color: '#2563eb' }}><strong>{downregulated}</strong> Downregulated</div>
-      </div>
-
       <div className="deg-controls">
         <div className="deg-search-bar">
           <input
