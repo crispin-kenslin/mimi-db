@@ -39,20 +39,58 @@
 .deg-search-bar {
   display: flex;
   gap: 0.75rem;
-  align-items: center;
+  align-items: end;
   flex-wrap: nowrap;
   width: 100%;
-  justify-content: space-between;
+  justify-content: flex-start;
 }
 
 .deg-search {
-  flex: 1;
-  min-width: 300px;
+  flex: 1 1 auto;
+  min-width: 260px;
   padding: 0.65rem 0.85rem;
   border: 1px solid #ddd;
   border-radius: 4px;
   font-size: 0.9rem;
   transition: all 0.2s;
+}
+
+.deg-sort-row {
+  display: flex;
+  gap: 0.75rem;
+  align-items: end;
+  flex-wrap: nowrap;
+}
+
+.sort-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.sort-group label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #333;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.deg-sort-select {
+  min-width: 170px;
+  height: 38px;
+  padding: 0.5rem 0.65rem;
+  border: 1px solid var(--gray-300);
+  border-radius: 6px;
+  background: white;
+  font-size: 0.88rem;
+  color: var(--gray-800);
+}
+
+.deg-sort-select:focus {
+  outline: none;
+  border-color: var(--primary-600);
+  box-shadow: 0 0 0 2px rgba(5, 150, 105, 0.15);
 }
 
 .deg-search:focus {
@@ -156,6 +194,29 @@
   outline: none;
   -webkit-appearance: none;
   appearance: none;
+}
+
+.filter-input-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.filter-number-input {
+  width: 90px;
+  height: 34px;
+  border: 1px solid var(--gray-300);
+  border-radius: 6px;
+  padding: 0.3rem 0.45rem;
+  font-size: 0.85rem;
+  color: var(--gray-800);
+  background: white;
+}
+
+.filter-number-input:focus {
+  outline: none;
+  border-color: var(--primary-600);
+  box-shadow: 0 0 0 2px rgba(5, 150, 105, 0.15);
 }
 
 .filter-slider::-webkit-slider-thumb {
@@ -272,8 +333,31 @@
 
 .gene-name {
   font-weight: 500;
-  color: var(--primary-600);
+  color: var(--primary-1000);
   font-family: monospace;
+}
+
+.gene-link-btn {
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  font-family: monospace;
+  color: var(--primary-700);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.gene-link-btn:hover {
+  color: var(--primary-900);
+}
+
+.gene-link-btn:focus-visible {
+  outline: 2px solid var(--primary-500);
+  outline-offset: 2px;
+  border-radius: 2px;
 }
 
 .fold-change {
@@ -292,7 +376,7 @@
 
 .chr-col {
   font-weight: 500;
-  color: var(--primary-700);
+  color: var(--gray-600);
 }
 
 .pos-col {
@@ -311,7 +395,11 @@
   max-width: none;
   word-break: break-word;
   overflow-wrap: break-word;
-  color: var(--gray-600);
+  color: var(--primary-700);
+  font-weight: 500;
+  background-color: #f0fdf4;
+  padding: 1rem 0.85rem;
+  border-radius: 4px;
 }
 
 .deg-loading,
@@ -338,7 +426,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1rem;
 }
 
 .deg-footer {
@@ -352,13 +439,74 @@
   width: 100%;
 }
 
+.gene-seq-modal {
+  max-width: 980px;
+}
+
+.gene-seq-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.5rem;
+  margin-bottom: 0.9rem;
+  color: var(--gray-700);
+  font-size: 0.9rem;
+}
+
+.gene-seq-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.75rem;
+}
+
+.copy-status-text {
+  font-size: 0.82rem;
+  color: var(--primary-700);
+  font-weight: 600;
+}
+
+.gene-seq-fasta-title {
+  margin-top: 0.9rem;
+  margin-bottom: 0.45rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--gray-700);
+}
+
+.gene-seq-textarea {
+  width: 100%;
+  resize: vertical;
+  border: 1px solid var(--gray-300);
+  border-radius: 8px;
+  padding: 0.85rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 0.86rem;
+  line-height: 1.45;
+  color: var(--gray-800);
+  background: #fbfdfc;
+}
+
 @media (max-width: 768px) {
   .deg-search-bar {
     flex-direction: column;
+    align-items: stretch;
   }
 
   .deg-search {
     min-width: 100%;
+  }
+
+  .deg-sort-row {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .sort-group,
+  .deg-sort-select {
+    width: 100%;
   }
 
   .filter-toggle-btn {

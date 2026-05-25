@@ -48,7 +48,7 @@ function Search() {
       try {
         setLoading(true);
         const response = await axios.get('/api/search/genes', {
-          params: { q: query, limit: 200 },
+          params: { q: query, limit: 10000 },
         });
         setGeneResults(response.data.results || []);
       } catch (error) {
@@ -169,6 +169,7 @@ function Search() {
                       <th>Gene Name</th>
                       <th>Location</th>
                       <th>Strand</th>
+                      <th>Product</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -183,6 +184,7 @@ function Search() {
                         <td>{gene.gene_name || '—'}</td>
                         <td style={{ fontFamily: 'monospace' }}>{gene.seqid}:{gene.start}-{gene.end}</td>
                         <td>{gene.strand}</td>
+                        <td>{gene.product || '-'}</td>
                       </tr>
                     ))}
                   </tbody>

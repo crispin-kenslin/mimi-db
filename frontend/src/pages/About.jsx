@@ -33,7 +33,6 @@ function About() {
           <li><strong>Finger Millet</strong> (<em>Eleusine coracana</em>) — Richest source of calcium among cereals</li>
           <li><strong>Foxtail Millet</strong> (<em>Setaria italica</em>) — C4 model organism for genomics</li>
           <li><strong>Proso Millet</strong> (<em>Panicum miliaceum</em>) — Shortest growing period of all millets</li>
-          <li><strong>Pearl Millet</strong> (<em>Pennisetum glaucum</em>) — Most widely grown millet globally</li>
           <li><strong>Little Millet</strong> (<em>Panicum sumatrense</em>) — Lowest glycemic index among millets</li>
           <li><strong>Barnyard Millet</strong> (<em>Echinochloa esculenta</em>) — Lowest carbohydrate content among millets</li>
         </ul>
@@ -47,7 +46,7 @@ function About() {
           <li><strong>Phytozome (JGI)</strong> — Plant genome annotations and comparative genomics data</li>
           <li><strong>Ensembl Plants</strong> — Gene models and variation data</li>
           <li><strong>MetaboLights (EBI)</strong> — Metabolomics experiment data</li>
-          <li><strong>ICRISAT</strong> — Pearl millet genome project data</li>
+          <li><strong>ICRISAT</strong> — Millet genome project data</li>
           <li><strong>Published literature</strong> — Peer-reviewed journals for analysis results and summary statistics</li>
         </ul>
 

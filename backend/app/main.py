@@ -80,3 +80,23 @@ def seed_crops_from_config() -> None:
 
 
 seed_crops_from_config()
+
+
+def remove_pearl_millet_if_present() -> None:
+    """Delete any Pearl Millet crop rows if present in the database."""
+    db = SessionLocal()
+    try:
+        pearl = db.query(models.Crop).filter(models.Crop.name == 'Pearl Millet').all()
+        if pearl:
+            for p in pearl:
+                db.delete(p)
+            db.commit()
+            print(f"Removed {len(pearl)} Pearl Millet crop row(s) from database")
+    except Exception as exc:
+        db.rollback()
+        print(f"Error removing Pearl Millet: {exc}")
+    finally:
+        db.close()
+
+
+remove_pearl_millet_if_present()

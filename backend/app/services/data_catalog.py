@@ -161,9 +161,24 @@ def find_gene_hits_in_gff(path: Path, query: str, limit: int = 200) -> List[Dict
                     k, v = segment.split("=", 1)
                     attr_map[k.strip()] = v.strip()
 
-            gene_id = attr_map.get("ID") or attr_map.get("gene_id") or ""
-            gene_name = attr_map.get("Name") or attr_map.get("gene_name") or ""
-            haystack = f"{gene_id} {gene_name} {attributes}".lower()
+            # create a lowercase-key view for common attribute names
+            lmap = {k.lower(): v for k, v in attr_map.items()}
+
+            gene_id = attr_map.get("ID") or attr_map.get("gene_id") or lmap.get("id") or lmap.get("gene_id") or ""
+            gene_name = attr_map.get("Name") or attr_map.get("gene_name") or lmap.get("name") or lmap.get("gene_name") or ""
+            # try to extract a product/description if available
+            product = (
+                lmap.get("product")
+                or lmap.get("product_name")
+                or lmap.get("description")
+                or lmap.get("note")
+                or attr_map.get("product")
+                or attr_map.get("product_name")
+                or attr_map.get("description")
+                or ""
+            )
+
+            haystack = f"{gene_id} {gene_name} {attributes} {product}".lower()
             if query_lower not in haystack:
                 continue
 
@@ -175,6 +190,7 @@ def find_gene_hits_in_gff(path: Path, query: str, limit: int = 200) -> List[Dict
                     "strand": parts[6],
                     "gene_id": gene_id,
                     "gene_name": gene_name,
+                    "product": product,
                 }
             )
             if len(hits) >= limit:

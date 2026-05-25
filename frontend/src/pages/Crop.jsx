@@ -1,17 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
-import { ArrowLeft, Download, Dna, ExternalLink, Info, Database, Droplets, Sun, Zap } from 'lucide-react';
+import { ArrowLeft, Download, Dna, Database } from 'lucide-react';
 import FileListModal from '../components/FileListModal';
+// reference genome refseq moved to data/ and served at /data/reference-genome-refseq.json
 
 const toSlug = (name) => name.toLowerCase().trim().replace(/\s+/g, '-');
 
-const STRESS_ICONS = {
-  drought: <Droplets size={32} />,
-  heat: <Sun size={32} />,
-  salt: <Zap size={32} />,
-  salty: <Zap size={32} />,
-};
+// No stress icons - keep cards text-only per UX request
 
 function Crop() {
   const { slug } = useParams();
@@ -21,6 +17,7 @@ function Crop() {
   const [stressesLoading, setStressesLoading] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalConfig, setModalConfig] = useState({ cropName: '', dataType: '', title: '' });
+  const [referenceGenomeMap, setReferenceGenomeMap] = useState(null);
 
   useEffect(() => {
     const fetchCropData = async () => {
@@ -54,6 +51,18 @@ function Crop() {
     fetchStresses();
   }, [crop]);
 
+  useEffect(() => {
+    const fetchRef = async () => {
+      try {
+        const resp = await axios.get('/data/reference-genome-refseq.json');
+        setReferenceGenomeMap(resp.data || null);
+      } catch (err) {
+        setReferenceGenomeMap(null);
+      }
+    };
+    fetchRef();
+  }, []);
+
   const openFileModal = (dataType, title) => {
     const cropSlug = toSlug(crop.name);
     setModalConfig({ cropName: cropSlug, dataType, title });
@@ -65,6 +74,7 @@ function Crop() {
 
   const cropSlug = toSlug(crop.name);
   const cropFtpIndexUrl = `/api/files/ftp/${cropSlug}`;
+  const referenceGenomeText = (referenceGenomeMap && (referenceGenomeMap[cropSlug] || referenceGenomeMap.default)) || null;
 
   return (
     <div className="fade-in crop-page">
@@ -78,12 +88,14 @@ function Crop() {
 
       {/* Header Section */}
       <section className="crop-header">
-        <Link to="/" className="crop-back-link">
-          <ArrowLeft size={18} /> Back to Millets
-        </Link>
-        <h1 className="crop-title">{crop.name}</h1>
-        <p className="crop-scientific-name">{crop.scientific_name}</p>
-        <p className="crop-description">{crop.description || 'No description available.'}</p>
+        <div className="crop-header-inner">
+          <Link to="/" className="crop-back-link">
+            <ArrowLeft size={18} /> Back to Millets
+          </Link>
+          <h1 className="crop-title">{crop.name}</h1>
+          <p className="crop-scientific-name">{crop.scientific_name}</p>
+          <p className="crop-description">{crop.description || 'No description available.'}</p>
+        </div>
       </section>
 
       {/* Quick Access Section */}
@@ -115,67 +127,111 @@ function Crop() {
         </div>
       </section>
 
-      {/* Genomics Section */}
-      <section className="crop-section genomics-section">
-        <div className="section-inner">
-          <h2 className="section-title"><Dna size={24} /> Genomics Data</h2>
-          <div className="data-subsection">
-            <h3 className="subsection-title">Genome Information</h3>
-            <div className="info-grid">
-              <div className="info-item">
-                <span className="info-label">Chromosomes</span>
-                <span className="info-value">{crop.chromosome_number || '—'}</span>
+      <div className="crop-layout">
+        <aside className="crop-sidebar">
+          <nav>
+            <ul>
+              <li><a href="#genomics">Genomics</a></li>
+              <li><a href="#transcriptomics">Transcriptomics</a></li>
+              <li><Link to={`/tools/jbrowse`}>Genome Browser</Link></li>
+            </ul>
+          </nav>
+        </aside>
+
+        <div className="crop-content">
+          {/* Genomics Section */}
+          <section id="genomics" className="crop-section genomics-section">
+            <div className="section-inner">
+              <h2 className="section-title"><Dna size={24} /> Genomics Data</h2>
+              <div className="data-subsection">
+                <h3 className="subsection-title">Genome Information</h3>
+                <div className="info-grid">
+                  <div className="info-item">
+                    <span className="info-label">Chromosomes</span>
+                    <span className="info-value">{crop.chromosome_number || '—'}</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="info-label">Genome Size</span>
+                    <span className="info-value">{crop.genome_size_mb || '—'} Mb</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="info-label">Family</span>
+                    <span className="info-value">{crop.family || '—'}</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="info-label">Ploidy Level</span>
+                    <span className="info-value">{crop.ploidy_level || '—'}</span>
+                  </div>
+                </div>
               </div>
-              <div className="info-item">
-                <span className="info-label">Genome Size</span>
-                <span className="info-value">{crop.genome_size_mb || '—'} Mb</span>
-              </div>
-              <div className="info-item">
-                <span className="info-label">Family</span>
-                <span className="info-value">{crop.family || '—'}</span>
-              </div>
-              <div className="info-item">
-                <span className="info-label">Ploidy Level</span>
-                <span className="info-value">{crop.ploidy_level || '—'}</span>
+
+              <div className="data-subsection">
+                <h3 className="subsection-title">Reference Genome (RefSeq)</h3>
+                {referenceGenomeText ? (
+                  <div className="reference-genome-box">
+                    <div className="ref-header">
+                      <h4>{crop.name} — Reference Genome</h4>
+                      <div className="ref-actions">
+                        <a href={`/api/files/ftp/${cropSlug}`} className="btn-link">Browse files</a>
+                        <a href={`/tools/jbrowse?crop=${cropSlug}`} className="btn-link">Open JBrowse</a>
+                      </div>
+                    </div>
+                    <div className="ref-grid">
+                      <div className="ref-left">
+                        <div className="ref-item"><span className="label">Scientific name</span><span className="value">{crop.scientific_name || '—'}</span></div>
+                        <div className="ref-item"><span className="label">Family</span><span className="value">{crop.family || '—'}</span></div>
+                        <div className="ref-item"><span className="label">Genome Size</span><span className="value">{crop.genome_size_mb || '—'} Mb</span></div>
+                        <div className="ref-item"><span className="label">Chromosomes</span><span className="value">{crop.chromosome_number || '—'}</span></div>
+                      </div>
+                      <div className="ref-right">
+                        {referenceGenomeText.split('\n').slice(1).map((line, i) => {
+                          const parts = line.split(':');
+                          const key = parts[0] ? parts[0].trim() : '';
+                          const val = parts.slice(1).join(':').trim();
+                          return (
+                            <div key={i} className="ref-item"><span className="label">{key}</span><span className="value">{val || '—'}</span></div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <pre className="reference-genome-text">No RefSeq info available.</pre>
+                )}
               </div>
             </div>
-          </div>
-        </div>
-      </section>
+          </section>
 
-      {/* Transcriptomics Section */}
-      <section className="crop-section transcriptomics-section">
-        <div className="section-inner">
-          <h2 className="section-title"><Dna size={24} /> Transcriptomics Data</h2>
+          {/* Transcriptomics Section */}
+          <section id="transcriptomics" className="crop-section transcriptomics-section">
+            <div className="section-inner">
+              <h2 className="section-title"><Dna size={24} /> Transcriptomics Data</h2>
 
-          {stressesLoading ? (
-            <div className="loader-wrapper"><div className="loader"></div></div>
-          ) : stresses.length > 0 ? (
-            <div className="stress-cards-grid">
-              {stresses.map((stress) => (
-                <Link
-                  key={stress.type}
-                  to={`/crop/${cropSlug}/stress/${stress.type}`}
-                  className="stress-card"
-                >
-                  <div className="stress-icon">
-                    {STRESS_ICONS[stress.type] || <Droplets size={32} />}
-                  </div>
-                  <div className="stress-content">
-                    <h3>{stress.name}</h3>
-                    <p>View DEG Analysis</p>
-                  </div>
-                </Link>
-              ))}
+              {stressesLoading ? (
+                <div className="loader-wrapper"><div className="loader"></div></div>
+              ) : stresses.length > 0 ? (
+                <div className="stress-cards-grid">
+                  {stresses.map((stress) => (
+                    <Link
+                      key={stress.type}
+                      to={`/crop/${cropSlug}/stress/${stress.type}`}
+                      className="stress-card no-icon"
+                    >
+                      <div className="stress-content">
+                        <h3>{stress.name}</h3>
+                        <p>View DEG Analysis</p>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <div className="no-data-message">No transcriptomics data available for this crop.</div>
+              )}
             </div>
-          ) : (
-            <div className="no-data-message">No transcriptomics data available for this crop.</div>
-          )}
-        </div>
-      </section>
+          </section>
 
-      {/* Metabolomics Section */}
-      <section className="crop-section metabolomics-section">
+          {/* Metabolomics Section */}
+          <section className="crop-section metabolomics-section">
         <div className="section-inner">
           <div className="section-header">
             <h2 className="section-title">Metabolomics Data</h2>
@@ -188,6 +244,8 @@ function Crop() {
           </div>
         </div>
       </section>
+        </div>
+      </div>
     </div>
   );
 }

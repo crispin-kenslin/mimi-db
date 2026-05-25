@@ -6,7 +6,7 @@ router = APIRouter(prefix="/search", tags=["search"])
 
 
 @router.get("/genes")
-def gene_search(q: str = Query(..., min_length=2), crop: str | None = None, limit: int = Query(100, ge=1, le=500)):
+def gene_search(q: str = Query(..., min_length=2), crop: str | None = None, limit: int = Query(1000, ge=1, le=20000)):
     resources = build_genome_resources()
     if crop:
         resources = [r for r in resources if r.crop_slug == crop]

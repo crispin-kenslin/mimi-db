@@ -2,7 +2,7 @@
 
 An upgraded full-stack bioinformatics web application for the **Minor Millets Database (MIMI DB)**, originally developed at the Bioinformatics Centre, Tamil Nadu Agricultural University ([TNAU MIMI DB](http://bioinfo.tnau.ac.in/mimidb/homepage.html#)).
 
-This version features a professional, institutional-grade UI with comprehensive genomic, transcriptomic, and metabolomic data visualization for six minor millet species.
+This version features a professional, institutional-grade UI with comprehensive genomic, transcriptomic, and metabolomic data visualization for five minor millet species.
 
 ---
 
@@ -86,9 +86,9 @@ npm run dev
 
 ## Application Features
 
-### Home Page
+-### Home Page
 - Professional institutional-style dashboard
-- Browse all 6 minor millets at a glance with chromosome count, genome size, ploidy, and drought tolerance
+- Browse all 5 minor millets at a glance with chromosome count, genome size, ploidy, and drought tolerance
 - Quick statistics banner
 
 ### Crop Detail Page
@@ -115,9 +115,8 @@ When you click on any millet, you get 5 tabs:
 | 1 | Finger Millet | *Eleusine coracana* | 1196 Mb |
 | 2 | Foxtail Millet | *Setaria italica* | 490 Mb |
 | 3 | Proso Millet | *Panicum miliaceum* | 923 Mb |
-| 4 | Pearl Millet | *Pennisetum glaucum* | 1760 Mb |
-| 5 | Little Millet | *Panicum sumatrense* | 510 Mb |
-| 6 | Barnyard Millet | *Echinochloa esculenta* | 1340 Mb |
+| 4 | Little Millet | *Panicum sumatrense* | 510 Mb |
+| 5 | Barnyard Millet | *Echinochloa esculenta* | 1340 Mb |
 
 ---
 

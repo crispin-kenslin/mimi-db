@@ -9,7 +9,7 @@ import tempfile
 import os
 from functools import lru_cache
 
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, HTTPException, Query, Request
 
 from ..services.data_catalog import DATA_DIR, build_genome_resources, preferred_fasta, preferred_gff, to_data_url
 
@@ -176,6 +176,94 @@ def _prepare_jbrowse_fasta(crop_slug: str, source_fasta: Path) -> tuple[Path, Pa
         _build_fai(target_fasta, fai_path)
 
     return target_fasta, fai_path
+
+
+@lru_cache(maxsize=64)
+def _fai_index_cached(fai_path: str, mtime_ns: int) -> dict[str, tuple[int, int, int, int]]:
+    _ = mtime_ns
+    index: dict[str, tuple[int, int, int, int]] = {}
+    with Path(fai_path).open("r", encoding="utf-8", errors="ignore") as handle:
+        for line in handle:
+            parts = line.strip().split("\t")
+            if len(parts) < 5:
+                continue
+            seqid = parts[0]
+            try:
+                length = int(parts[1])
+                offset = int(parts[2])
+                line_bases = int(parts[3])
+                line_width = int(parts[4])
+            except ValueError:
+                continue
+            index[seqid] = (length, offset, line_bases, line_width)
+    return index
+
+
+def _reverse_complement(seq: str) -> str:
+    comp = str.maketrans("ACGTRYSWKMBDHVNacgtryswkmbdhvn", "TGCAYRSWMKVHDBNtgcayrswmkvhdbn")
+    return seq.translate(comp)[::-1]
+
+
+def _extract_fasta_region(crop_slug: str, seqid: str, start: int, end: int, strand: str) -> dict[str, object]:
+    fasta = preferred_fasta(crop_slug)
+    if fasta is None:
+        raise HTTPException(status_code=404, detail="No genome FASTA found for this crop")
+
+    prepared_fasta, fai_path = _prepare_jbrowse_fasta(crop_slug, fasta)
+    fai_index = _fai_index_cached(str(fai_path), fai_path.stat().st_mtime_ns)
+
+    if not fai_index:
+        raise HTTPException(status_code=500, detail="Failed to read FASTA index")
+
+    resolved_seqid = None
+    for candidate in [seqid, seqid.strip(), seqid.split(" ", 1)[0]]:
+        if candidate in fai_index:
+            resolved_seqid = candidate
+            break
+    if resolved_seqid is None:
+        for key in fai_index:
+            if key.lower() == seqid.lower():
+                resolved_seqid = key
+                break
+    if resolved_seqid is None:
+        raise HTTPException(status_code=404, detail=f"Chromosome/sequence '{seqid}' not found in FASTA index")
+
+    length, offset, line_bases, line_width = fai_index[resolved_seqid]
+    if start < 1 or end < 1 or end < start:
+        raise HTTPException(status_code=400, detail="Invalid coordinates: start/end must be positive and end >= start")
+    if end > length:
+        raise HTTPException(status_code=400, detail=f"Requested end ({end}) exceeds sequence length ({length})")
+
+    zero_start = start - 1
+    zero_end = end - 1
+    start_line = zero_start // line_bases
+    end_line = zero_end // line_bases
+    byte_start = offset + (start_line * line_width) + (zero_start % line_bases)
+    byte_end = offset + (end_line * line_width) + (zero_end % line_bases) + 1
+
+    with prepared_fasta.open("rb") as handle:
+        handle.seek(byte_start)
+        chunk = handle.read(max(0, byte_end - byte_start))
+
+    sequence = chunk.replace(b"\n", b"").replace(b"\r", b"").decode("utf-8", errors="ignore")
+    expected_len = end - start + 1
+    if len(sequence) < expected_len:
+        raise HTTPException(status_code=500, detail="Failed to extract complete sequence for requested region")
+    sequence = sequence[:expected_len].upper()
+
+    out_strand = strand if strand in ["+", "-"] else "+"
+    if out_strand == "-":
+        sequence = _reverse_complement(sequence)
+
+    return {
+        "crop": crop_slug,
+        "seqid": resolved_seqid,
+        "start": start,
+        "end": end,
+        "strand": out_strand,
+        "length": len(sequence),
+        "sequence": sequence,
+    }
 
 
 def _prepare_jbrowse_gff(crop_slug: str, source_gff: Path) -> Path:
@@ -533,6 +621,21 @@ def list_genomes():
             }
         )
     return {"genomes": genomes}
+
+
+@router.get("/gene-sequence")
+def gene_sequence(
+    crop: str = Query(..., min_length=1),
+    seqid: str = Query(..., min_length=1),
+    start: int = Query(..., ge=1),
+    end: int = Query(..., ge=1),
+    strand: str = Query("+"),
+    gene: str | None = Query(default=None),
+):
+    payload = _extract_fasta_region(crop_slug=crop, seqid=seqid, start=start, end=end, strand=strand)
+    if gene:
+        payload["gene"] = gene
+    return payload
 
 
 @router.get("/jbrowse/cli/version")

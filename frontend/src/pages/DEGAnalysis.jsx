@@ -47,6 +47,7 @@ function DEGAnalysis() {
 
   const cropName = cropSlug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
   const stressName = stressType.charAt(0).toUpperCase() + stressType.slice(1);
+  const pct = (value, total) => (total > 0 ? ((value / total) * 100).toFixed(1) : '0.0');
 
   return (
     <div className="deg-analysis-page">
@@ -67,7 +68,6 @@ function DEGAnalysis() {
           ) : degStats ? (
             <div className="deg-stats-grid">
               <div className="deg-stat-card">
-                <div className="stat-icon total"><span></span></div>
                 <div className="stat-content">
                   <div className="stat-value">{degStats.total}</div>
                   <div className="stat-label">Total Genes</div>
@@ -75,34 +75,31 @@ function DEGAnalysis() {
               </div>
 
               <div className="deg-stat-card upregulated">
-                <div className="stat-icon"><span></span></div>
                 <div className="stat-content">
                   <div className="stat-value">{degStats.upregulated}</div>
                   <div className="stat-label">Upregulated</div>
                   <div className="stat-percent">
-                    {((degStats.upregulated / degStats.total) * 100).toFixed(1)}%
+                    {pct(degStats.upregulated, degStats.total)}%
                   </div>
                 </div>
               </div>
 
               <div className="deg-stat-card downregulated">
-                <div className="stat-icon"><span></span></div>
                 <div className="stat-content">
                   <div className="stat-value">{degStats.downregulated}</div>
                   <div className="stat-label">Downregulated</div>
                   <div className="stat-percent">
-                    {((degStats.downregulated / degStats.total) * 100).toFixed(1)}%
+                    {pct(degStats.downregulated, degStats.total)}%
                   </div>
                 </div>
               </div>
 
               <div className="deg-stat-card significant">
-                <div className="stat-icon"><span></span></div>
                 <div className="stat-content">
                   <div className="stat-value">{degStats.significant}</div>
                   <div className="stat-label">Significant (padj &lt; 0.05)</div>
                   <div className="stat-percent">
-                    {((degStats.significant / degStats.total) * 100).toFixed(1)}%
+                    {pct(degStats.significant, degStats.total)}%
                   </div>
                 </div>
               </div>

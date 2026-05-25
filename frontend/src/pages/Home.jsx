@@ -10,7 +10,6 @@ const CROP_IMAGES = {
   'Finger Millet': `${IMAGE_BASE}/finger_millet.png`,
   'Foxtail Millet': `${IMAGE_BASE}/foxtail_millet.png`,
   'Proso Millet': `${IMAGE_BASE}/proso_millet.png`,
-  'Pearl Millet': `${IMAGE_BASE}/pearl_millet.png`,
   'Little Millet': `${IMAGE_BASE}/little_millet.png`,
   'Barnyard Millet': `${IMAGE_BASE}/barnyard_millet.png`,
 };
@@ -100,14 +99,7 @@ function Home() {
             A comprehensive integrative resource bringing together genomic, transcriptomic,
             and metabolomic data for six minor millet species from all publicly available databases —
             accessible in a single platform.
-          </p>
-          <div className="hero-counters">
-            <AnimatedCounter value={stats.millet_species} label="Millet Species" />
-            <AnimatedCounter value={stats.reference_genomes} label="Reference Genomes" />
-            <AnimatedCounter value={stats.transcriptome_studies} label="Transcriptome Studies" />
-            <AnimatedCounter value={stats.metabolites_catalogued} label="Metabolites Catalogued" />
-            <AnimatedCounter value={stats.predicted_genes} label="Predicted Genes" />
-          </div> 
+          </p> 
         </div>
       </section>
 
@@ -118,8 +110,10 @@ function Home() {
           <p>Click on a species to access its complete multi-omics data</p>
         </div>
         <div className="millets-row">
-          {crops.map((crop) => (
-            <Link to={`/crop/${toSlug(crop.name)}`} key={crop.id} className="millet-card">
+          {crops
+            .filter((crop) => crop.name !== 'Pearl Millet')
+            .map((crop) => (
+              <Link to={`/crop/${toSlug(crop.name)}`} key={crop.id} className="millet-card">
               <div className="millet-card-img-wrap">
                 <img
                   src={CROP_IMAGES[crop.name] || `${IMAGE_BASE}/finger_millet.png`}
@@ -140,21 +134,7 @@ function Home() {
         </div>
       </section>
 
-      {/* ===== FEATURES ===== */}
-      <div className="features-grid">
-        {[
-          { icon: <Database size={22} />, title: 'Genome Assemblies', desc: 'Reference genome assemblies with gene annotations, repeat analysis, and ortholog comparisons from NCBI & Phytozome.' },
-          { icon: <Dna size={22} />, title: 'Transcriptomics', desc: 'RNA-Seq experiments under multiple stress conditions with differential expression analysis and top gene tables.' },
-          { icon: <FlaskConical size={22} />, title: 'Metabolomics', desc: 'LC-MS/MS and GC-MS metabolite profiling with class distributions, key bioactive compound data from open databases.' },
-          { icon: <BarChart3 size={22} />, title: 'Analysis Reports', desc: 'GWAS, phylogenomics, comparative genomics, pangenome construction, and functional enrichment analyses.' },
-        ].map((f, i) => (
-          <div className="feature-card" key={i}>
-            <div className="feature-card-icon">{f.icon}</div>
-            <h4>{f.title}</h4>
-            <p>{f.desc}</p>
-          </div>
-        ))}
-      </div>
+      {/* Features removed per request */}
     </div>
   );
 }

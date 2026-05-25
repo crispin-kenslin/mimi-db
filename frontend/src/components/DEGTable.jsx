@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronUp, ChevronDown, X } from 'lucide-react';
 import './DEGTable.css';
 
 function DEGTable({ cropName, stressType }) {
@@ -15,6 +14,23 @@ function DEGTable({ cropName, stressType }) {
   const [regulation, setRegulation] = useState('all'); // all, up, down
   const [pValueThreshold, setPValueThreshold] = useState(0.05);
   const [padjThreshold, setPadjThreshold] = useState(1);
+  const [sequenceModalOpen, setSequenceModalOpen] = useState(false);
+  const [sequenceLoading, setSequenceLoading] = useState(false);
+  const [sequenceError, setSequenceError] = useState('');
+  const [selectedGene, setSelectedGene] = useState(null);
+  const [sequenceResult, setSequenceResult] = useState(null);
+  const [copyStatus, setCopyStatus] = useState('');
+
+  const sortFields = [
+    { key: 'gene', label: 'Gene' },
+    { key: 'log2FoldChange', label: 'log2 Fold Change' },
+    { key: 'pvalue', label: 'P-value' },
+    { key: 'padj', label: 'Adjusted P-value' },
+    { key: 'chr', label: 'Chromosome' },
+    { key: 'start', label: 'Start Position' },
+    { key: 'strand', label: 'Strand' },
+    { key: 'product', label: 'Product' },
+  ];
 
   useEffect(() => {
     const fetchData = async () => {
@@ -27,21 +43,82 @@ function DEGTable({ cropName, stressType }) {
           throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
         const csvText = await response.text();
-        const rows = csvText.trim().split('\n').slice(1);
-        const parsed = rows.map(row => {
-          const cols = row.split(',');
+        // Safe CSV parser that supports quoted commas without regex backtracking loops.
+        const splitCSV = (line) => {
+          const cols = [];
+          let current = '';
+          let inQuotes = false;
+
+          for (let i = 0; i < line.length; i += 1) {
+            const ch = line[i];
+
+            if (ch === '"') {
+              if (inQuotes && line[i + 1] === '"') {
+                current += '"';
+                i += 1;
+              } else {
+                inQuotes = !inQuotes;
+              }
+              continue;
+            }
+
+            if (ch === ',' && !inQuotes) {
+              cols.push(current.trim());
+              current = '';
+              continue;
+            }
+
+            current += ch;
+          }
+
+          cols.push(current.trim());
+          return cols;
+        };
+
+        const lines = csvText.trim().split('\n').filter(l => l.trim().length > 0);
+        if (lines.length === 0) {
+          setData([]);
+          return;
+        }
+
+        const headerCols = splitCSV(lines[0]).map(h => h.trim().toLowerCase());
+        const headerIndex = {};
+        headerCols.forEach((h, idx) => { headerIndex[h] = idx; });
+
+        const findIndex = (candidates) => {
+          for (const cand of candidates) {
+            const key = cand.toLowerCase();
+            if (key in headerIndex) return headerIndex[key];
+          }
+          return -1;
+        };
+
+        const idxGene = findIndex(['gene', 'gene_id', 'id', 'name']);
+        const idxLog2 = findIndex(['log2foldchange', 'log2 fold change', 'log2fc', 'log2_fold_change']);
+        const idxP = findIndex(['pvalue', 'p-value', 'p_value', 'p']);
+        const idxPadj = findIndex(['padj', 'adjusted p-value', 'adj p-value', 'padj']);
+        const idxChr = findIndex(['chr', 'chromosome', 'seqid']);
+        const idxStart = findIndex(['start', 'position_start', 'pos_start']);
+        const idxEnd = findIndex(['end', 'position_end', 'pos_end']);
+        const idxStrand = findIndex(['strand']);
+        const idxProduct = findIndex(['product', 'annotation', 'description']);
+
+        const dataRows = lines.slice(1);
+        const parsed = dataRows.map(row => {
+          const cols = splitCSV(row);
+          const get = (i) => (i >= 0 && i < cols.length ? cols[i].trim() : '');
           return {
-            gene: cols[0],
-            log2FoldChange: parseFloat(cols[1]),
-            pvalue: parseFloat(cols[2]),
-            padj: parseFloat(cols[3]),
-            chr: cols[4],
-            start: cols[5],
-            end: cols[6],
-            strand: cols[7],
-            product: cols[8] || '',
+            gene: get(idxGene),
+            log2FoldChange: parseFloat(get(idxLog2)) || 0,
+            pvalue: parseFloat(get(idxP)) || 1,
+            padj: parseFloat(get(idxPadj)) || 1,
+            chr: get(idxChr),
+            start: parseInt(get(idxStart)) || 0,
+            end: parseInt(get(idxEnd)) || 0,
+            strand: get(idxStrand),
+            product: get(idxProduct),
           };
-        }).filter(r => r.gene && r.gene !== 'gene');
+        }).filter(r => r.gene && r.gene.toLowerCase() !== 'gene');
         setData(parsed);
       } catch (err) {
         console.error('Error fetching DEG data:', err);
@@ -53,11 +130,89 @@ function DEGTable({ cropName, stressType }) {
     fetchData();
   }, [cropName, stressType]);
 
-  const handleSort = (key) => {
-    setSortConfig(prev => ({
-      key,
-      direction: prev.key === key && prev.direction === 'desc' ? 'asc' : 'desc'
-    }));
+  const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+
+  const openGeneSequenceModal = async (row) => {
+    setSelectedGene(row);
+    setSequenceModalOpen(true);
+    setSequenceLoading(true);
+    setSequenceError('');
+    setSequenceResult(null);
+
+    try {
+      // quick pre-check: does this crop have a genome FASTA listed?
+      try {
+        const genomesResp = await fetch('/api/tools/genomes');
+        if (genomesResp.ok) {
+          const json = await genomesResp.json();
+          const matching = (json.genomes || []).find(
+            (g) => g.crop === cropName || g.crop === cropName.toLowerCase()
+          );
+          if (!matching || !matching.has_fasta) {
+            setSequenceError('No genome FASTA available for this crop; cannot retrieve sequence.');
+            setSequenceLoading(false);
+            return;
+          }
+        }
+      } catch (precheckErr) {
+        // ignore precheck errors and continue to allow servers without /genomes
+      }
+
+      const params = new URLSearchParams({
+        crop: cropName,
+        seqid: row.chr,
+        start: String(row.start),
+        end: String(row.end),
+        strand: row.strand || '+',
+        gene: row.gene,
+      });
+
+      const response = await fetch(`/api/tools/gene-sequence?${params.toString()}`);
+      if (!response.ok) {
+        let errMsg = `HTTP ${response.status}`;
+        try {
+          const ct = response.headers.get('content-type') || '';
+          if (ct.includes('application/json')) {
+            const j = await response.json();
+            errMsg = j.detail || JSON.stringify(j);
+          } else {
+            const t = await response.text();
+            if (t) errMsg = t;
+          }
+        } catch (parseErr) {
+          // ignore JSON/text parse errors
+        }
+        throw new Error(errMsg);
+      }
+      const payload = await response.json();
+      setSequenceResult(payload);
+    } catch (err) {
+      console.error('Error fetching gene sequence:', err);
+      setSequenceError(String(err.message || err));
+    } finally {
+      setSequenceLoading(false);
+    }
+  };
+
+  const buildFastaText = () => {
+    if (!sequenceResult || !selectedGene) return '';
+    const header = `>${selectedGene.gene} ${sequenceResult.seqid}:${sequenceResult.start}-${sequenceResult.end}(${sequenceResult.strand})`;
+    const seq = sequenceResult.sequence || '';
+    const wrapped = seq.match(/.{1,80}/g)?.join('\n') || seq;
+    return `${header}\n${wrapped}`;
+  };
+
+  const copyToClipboard = async (text, label) => {
+    if (!text) return;
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopyStatus(`${label} copied`);
+      setTimeout(() => setCopyStatus(''), 1500);
+    } catch (err) {
+      console.error('Copy failed:', err);
+      setCopyStatus('Copy failed');
+      setTimeout(() => setCopyStatus(''), 1500);
+    }
   };
 
   // Apply all filters
@@ -98,16 +253,21 @@ function DEGTable({ cropName, stressType }) {
   const sortedData = [...filteredData].sort((a, b) => {
     const aVal = a[sortConfig.key];
     const bVal = b[sortConfig.key];
-    if (typeof aVal === 'number') {
+    const numericKeys = new Set(['log2FoldChange', 'pvalue', 'padj', 'start', 'end']);
+
+    if (numericKeys.has(sortConfig.key)) {
+      const aNum = Number(aVal) || 0;
+      const bNum = Number(bVal) || 0;
+      return sortConfig.direction === 'desc' ? bNum - aNum : aNum - bNum;
+    }
+
+    if (typeof aVal === 'number' || typeof bVal === 'number') {
       return sortConfig.direction === 'desc' ? bVal - aVal : aVal - bVal;
     }
     return sortConfig.direction === 'desc'
       ? String(bVal).localeCompare(String(aVal))
       : String(aVal).localeCompare(String(bVal));
   });
-
-  const downregulated = data.filter(r => r.log2FoldChange < -1).length;
-  const upregulated = data.filter(r => r.log2FoldChange > 1).length;
 
   if (loading) return <div className="deg-loading">Loading data...</div>;
   if (error) return <div className="deg-error">Error: {error}</div>;
@@ -123,6 +283,35 @@ function DEGTable({ cropName, stressType }) {
             onChange={(e) => setSearchText(e.target.value)}
             className="deg-search"
           />
+
+          <div className="deg-sort-row">
+            <div className="sort-group">
+              <label htmlFor="deg-sort-key">Sort by</label>
+              <select
+                id="deg-sort-key"
+                value={sortConfig.key}
+                onChange={(e) => setSortConfig((prev) => ({ ...prev, key: e.target.value }))}
+                className="deg-sort-select"
+              >
+                {sortFields.map((field) => (
+                  <option key={field.key} value={field.key}>{field.label}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="sort-group">
+              <label htmlFor="deg-sort-direction">Order</label>
+              <select
+                id="deg-sort-direction"
+                value={sortConfig.direction}
+                onChange={(e) => setSortConfig((prev) => ({ ...prev, direction: e.target.value }))}
+                className="deg-sort-select"
+              >
+                <option value="desc">Descending</option>
+                <option value="asc">Ascending</option>
+              </select>
+            </div>
+          </div>
         </div>
 
         {showFilters && (
@@ -153,41 +342,89 @@ function DEGTable({ cropName, stressType }) {
 
             <div className="filter-group">
               <label>log2 Fold Change ≥ {log2FCThreshold.toFixed(1)}</label>
-              <input
-                type="range"
-                min="0"
-                max="10"
-                step="0.5"
-                value={log2FCThreshold}
-                onChange={(e) => setLog2FCThreshold(parseFloat(e.target.value))}
-                className="filter-slider"
-              />
+              <div className="filter-input-row">
+                <input
+                  type="range"
+                  min="0"
+                  max="10"
+                  step="0.5"
+                  value={log2FCThreshold}
+                  onChange={(e) => setLog2FCThreshold(parseFloat(e.target.value))}
+                  className="filter-slider"
+                />
+                <input
+                  type="number"
+                  min="0"
+                  max="10"
+                  step="0.1"
+                  value={log2FCThreshold}
+                  onChange={(e) => {
+                    const value = parseFloat(e.target.value);
+                    if (!Number.isNaN(value)) {
+                      setLog2FCThreshold(clamp(value, 0, 10));
+                    }
+                  }}
+                  className="filter-number-input"
+                />
+              </div>
             </div>
 
             <div className="filter-group">
               <label>P-value ≤ {pValueThreshold.toFixed(4)}</label>
-              <input
-                type="range"
-                min="0"
-                max="1"
-                step="0.01"
-                value={pValueThreshold}
-                onChange={(e) => setPValueThreshold(parseFloat(e.target.value))}
-                className="filter-slider"
-              />
+              <div className="filter-input-row">
+                <input
+                  type="range"
+                  min="0"
+                  max="0.1"
+                  step="0.01"
+                  value={pValueThreshold}
+                  onChange={(e) => setPValueThreshold(parseFloat(e.target.value))}
+                  className="filter-slider"
+                />
+                <input
+                  type="number"
+                  min="0"
+                  max="0.1"
+                  step="0.0001"
+                  value={pValueThreshold}
+                  onChange={(e) => {
+                    const value = parseFloat(e.target.value);
+                    if (!Number.isNaN(value)) {
+                      setPValueThreshold(clamp(value, 0, 0.1));
+                    }
+                  }}
+                  className="filter-number-input"
+                />
+              </div>
             </div>
 
             <div className="filter-group">
               <label>Adjusted P-value ≤ {padjThreshold.toFixed(4)}</label>
-              <input
-                type="range"
-                min="0"
-                max="1"
-                step="0.01"
-                value={padjThreshold}
-                onChange={(e) => setPadjThreshold(parseFloat(e.target.value))}
-                className="filter-slider"
-              />
+              <div className="filter-input-row">
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.01"
+                  value={padjThreshold}
+                  onChange={(e) => setPadjThreshold(parseFloat(e.target.value))}
+                  className="filter-slider"
+                />
+                <input
+                  type="number"
+                  min="0"
+                  max="1"
+                  step="0.0001"
+                  value={padjThreshold}
+                  onChange={(e) => {
+                    const value = parseFloat(e.target.value);
+                    if (!Number.isNaN(value)) {
+                      setPadjThreshold(clamp(value, 0, 1));
+                    }
+                  }}
+                  className="filter-number-input"
+                />
+              </div>
             </div>
 
             <button
@@ -210,32 +447,29 @@ function DEGTable({ cropName, stressType }) {
         <table className="deg-table">
           <thead>
             <tr>
-              <th className="sortable" onClick={() => handleSort('gene')}>
-                Gene {sortConfig.key === 'gene' && (sortConfig.direction === 'desc' ? <ChevronDown size={14} /> : <ChevronUp size={14} />)}
-              </th>
-              <th className="sortable" onClick={() => handleSort('log2FoldChange')}>
-                log2FC {sortConfig.key === 'log2FoldChange' && (sortConfig.direction === 'desc' ? <ChevronDown size={14} /> : <ChevronUp size={14} />)}
-              </th>
-              <th className="sortable" onClick={() => handleSort('pvalue')}>
-                p-value {sortConfig.key === 'pvalue' && (sortConfig.direction === 'desc' ? <ChevronDown size={14} /> : <ChevronUp size={14} />)}
-              </th>
-              <th className="sortable" onClick={() => handleSort('padj')}>
-                Adj p-value {sortConfig.key === 'padj' && (sortConfig.direction === 'desc' ? <ChevronDown size={14} /> : <ChevronUp size={14} />)}
-              </th>
-              <th className="sortable" onClick={() => handleSort('chr')}>
-                Chromosome {sortConfig.key === 'chr' && (sortConfig.direction === 'desc' ? <ChevronDown size={14} /> : <ChevronUp size={14} />)}
-              </th>
+              <th>Gene</th>
+              <th>log2FC</th>
+              <th>p-value</th>
+              <th>Adj p-value</th>
+              <th>Chromosome</th>
               <th>Position</th>
-              <th className="sortable" onClick={() => handleSort('strand')}>
-                Strand {sortConfig.key === 'strand' && (sortConfig.direction === 'desc' ? <ChevronDown size={14} /> : <ChevronUp size={14} />)}
-              </th>
+              <th>Strand</th>
               <th>Product</th>
             </tr>
           </thead>
           <tbody>
             {sortedData.map((row, idx) => (
               <tr key={idx} className={row.log2FoldChange > 0 ? 'upregulated' : 'downregulated'}>
-                <td className="gene-name">{row.gene}</td>
+                <td className="gene-name">
+                  <button
+                    type="button"
+                    className="gene-link-btn"
+                    onClick={() => openGeneSequenceModal(row)}
+                    title="Click to view sequence"
+                  >
+                    {row.gene}
+                  </button>
+                </td>
                 <td className={`fold-change ${row.log2FoldChange > 0 ? 'positive' : 'negative'}`}>
                   {row.log2FoldChange.toFixed(2)}
                 </td>
@@ -258,6 +492,67 @@ function DEGTable({ cropName, stressType }) {
       <div className="deg-footer">
         Showing {sortedData.length} of {data.length} genes
       </div>
+
+      {sequenceModalOpen && (
+        <div className="modal-overlay" onClick={() => setSequenceModalOpen(false)}>
+          <div className="modal-content gene-seq-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2 className="modal-title">Gene Sequence</h2>
+              <button className="modal-close" onClick={() => setSequenceModalOpen(false)}>×</button>
+            </div>
+
+            <div className="modal-body">
+              {selectedGene && (
+                <div className="gene-seq-meta">
+                  <div><strong>Gene:</strong> {selectedGene.gene}</div>
+                  <div><strong>Region:</strong> {selectedGene.chr}:{selectedGene.start}-{selectedGene.end} ({selectedGene.strand})</div>
+                </div>
+              )}
+
+              {sequenceLoading && <div className="deg-loading">Retrieving sequence...</div>}
+              {sequenceError && <div className="deg-error">{sequenceError}</div>}
+
+              {!sequenceLoading && !sequenceError && sequenceResult && (
+                <>
+                  <div className="gene-seq-meta">
+                    <div><strong>Length:</strong> {sequenceResult.length} bp</div>
+                  </div>
+                  <div className="gene-seq-actions">
+                    <button
+                      type="button"
+                      className="btn-outline btn-sm"
+                      onClick={() => copyToClipboard(sequenceResult.sequence, 'Sequence')}
+                    >
+                      Copy Sequence
+                    </button>
+                    <button
+                      type="button"
+                      className="btn-outline btn-sm"
+                      onClick={() => copyToClipboard(buildFastaText(), 'FASTA')}
+                    >
+                      Copy FASTA
+                    </button>
+                    {copyStatus && <span className="copy-status-text">{copyStatus}</span>}
+                  </div>
+                  <textarea
+                    className="gene-seq-textarea"
+                    readOnly
+                    value={sequenceResult.sequence}
+                    rows={12}
+                  />
+                  <div className="gene-seq-fasta-title">FASTA Format</div>
+                  <textarea
+                    className="gene-seq-textarea"
+                    readOnly
+                    value={buildFastaText()}
+                    rows={8}
+                  />
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -859,6 +859,28 @@ button { cursor: pointer; font-family: inherit; }
 /* ===========================
    CHART PANEL
    =========================== */
+/* Reference genome box styles */
+.reference-genome-box {
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  padding: 1rem;
+  box-shadow: var(--shadow-sm);
+}
+.ref-header {
+  display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;
+}
+.ref-header h4 { margin: 0; font-size: 1rem; color: var(--gray-900); }
+.ref-actions a { margin-left: 0.5rem; color: var(--primary-700); font-weight: 600; }
+.ref-grid { display: flex; gap: 1rem; }
+.ref-left, .ref-right { flex: 1; display: flex; flex-direction: column; gap: 0.5rem; }
+.ref-item { display: flex; justify-content: space-between; gap: 1rem; padding: 0.25rem 0; }
+.ref-item .label { font-size: 0.78rem; color: var(--gray-500); }
+.ref-item .value { font-size: 0.9rem; color: var(--gray-800); font-weight: 600; }
+
+/* ===========================
+   CHART PANEL
+   =========================== */
 .chart-panel {
   background: var(--white); border: 1px solid var(--gray-200);
   border-radius: var(--radius-lg); overflow: hidden;
@@ -1126,7 +1148,7 @@ button { cursor: pointer; font-family: inherit; }
 .crop-header {
   background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-800) 100%);
   color: white;
-  padding: 2rem;
+  width: 100%;
   margin-bottom: 2rem;
 }
 
@@ -1143,9 +1165,59 @@ button { cursor: pointer; font-family: inherit; }
 
 .crop-header {
   position: relative;
+}
+
+.crop-header-inner {
+  position: relative;
   max-width: 1320px;
   margin-left: auto;
   margin-right: auto;
+  padding: 2rem;
+}
+
+/* Layout for crop page with left navigation */
+.crop-layout {
+  display: flex;
+  gap: 2rem;
+}
+
+.crop-sidebar {
+  width: 200px;
+  flex: 0 0 200px;
+  position: sticky;
+  top: 90px;
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
+  align-self: flex-start;
+}
+
+.crop-sidebar nav ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.crop-sidebar nav a {
+  color: var(--primary-800);
+  padding: 0.5rem 0.75rem;
+  display: inline-block;
+  border-radius: 6px;
+  background: transparent;
+}
+
+.crop-sidebar nav a:hover {
+  background: rgba(0,0,0,0.04);
+}
+
+.crop-content {
+  flex: 1 1 auto;
+}
+
+.crop-content section[id] {
+  scroll-margin-top: 100px;
 }
 
 .crop-back-link {
@@ -1299,6 +1371,22 @@ button { cursor: pointer; font-family: inherit; }
   margin-bottom: 0;
 }
 
+.reference-genome-text {
+  margin: 0;
+  padding: 1.1rem 1.2rem;
+  white-space: pre-wrap;
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  font-size: 0.95rem;
+  line-height: 1.85;
+  letter-spacing: 0.01em;
+  color: #1f2937;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbf9 100%);
+  border: 1px solid var(--gray-200);
+  border-left: 4px solid var(--primary-500);
+  border-radius: 10px;
+  box-shadow: 0 10px 24px rgba(16, 24, 40, 0.06);
+}
+
 /* Info Grid */
 .info-grid {
   display: grid;
@@ -1333,6 +1421,32 @@ button { cursor: pointer; font-family: inherit; }
 /* Transcriptomics Section */
 .transcriptomics-section {
   background: linear-gradient(to bottom, var(--primary-50), var(--white));
+}
+
+.stress-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.stress-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: white;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--gray-200);
+  text-decoration: none;
+  color: inherit;
+}
+
+.stress-card .stress-content h3 {
+  margin: 0 0 0.25rem 0;
+}
+
+.stress-card.no-icon .stress-content {
+  margin-left: 0;
 }
 
 .deg-wrapper {
@@ -1389,7 +1503,7 @@ button { cursor: pointer; font-family: inherit; }
 }
 
 @media (max-width: 768px) {
-  .crop-header {
+  .crop-header-inner {
     padding: 1.5rem;
   }
 
@@ -1407,6 +1521,30 @@ button { cursor: pointer; font-family: inherit; }
 
   .quick-access-grid {
     grid-template-columns: 1fr;
+  }
+
+  .crop-layout {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .crop-sidebar {
+    position: static;
+    top: auto;
+    width: 100%;
+    max-height: none;
+    overflow: visible;
+  }
+
+  .crop-sidebar nav ul {
+    flex-direction: row;
+    gap: 0.4rem;
+    overflow-x: auto;
+    padding-bottom: 0.25rem;
+  }
+
+  .crop-sidebar nav a {
+    white-space: nowrap;
   }
 }
 
@@ -1485,8 +1623,8 @@ button { cursor: pointer; font-family: inherit; }
 
 .deg-stat-card {
   display: flex;
-  align-items: center;
-  gap: 1.5rem;
+  align-items: flex-start;
+  gap: 0;
   padding: 1.5rem;
   background: white;
   border-radius: var(--radius-lg);
@@ -1500,20 +1638,6 @@ button { cursor: pointer; font-family: inherit; }
   box-shadow: var(--shadow-md);
 }
 
-
-.stat-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 60px;
-  height: 60px;
-  background: var(--gray-100);
-  color: var(--gray-700);
-  border-radius: var(--radius-md);
-  flex-shrink: 0;
-  font-size: 1.5rem;
-  font-weight: bold;
-}
 
 .stat-content {
   display: flex;

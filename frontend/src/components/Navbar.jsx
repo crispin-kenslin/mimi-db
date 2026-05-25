@@ -11,7 +11,6 @@ const CROP_IMAGES = {
   'Finger Millet': `${IMAGE_BASE}/finger_millet.png`,
   'Foxtail Millet': `${IMAGE_BASE}/foxtail_millet.png`,
   'Proso Millet': `${IMAGE_BASE}/proso_millet.png`,
-  'Pearl Millet': `${IMAGE_BASE}/pearl_millet.png`,
   'Little Millet': `${IMAGE_BASE}/little_millet.png`,
   'Barnyard Millet': `${IMAGE_BASE}/barnyard_millet.png`,
 };
