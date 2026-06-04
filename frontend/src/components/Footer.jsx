@@ -17,9 +17,8 @@ function Footer() {
         <div className="footer-links">
           <h4>Resources</h4>
           <a href="https://www.ncbi.nlm.nih.gov/" target="_blank" rel="noopener noreferrer">NCBI</a>
-          <a href="https://phytozome.jgi.doe.gov/" target="_blank" rel="noopener noreferrer">Phytozome</a>
-          <a href="https://www.ebi.ac.uk/metabolights/" target="_blank" rel="noopener noreferrer">MetaboLights</a>
-          <a href="https://www.geneontology.org/" target="_blank" rel="noopener noreferrer">Gene Ontology</a>
+          <a href="https://www.ebi.ac.uk/ena/browser/" target="_blank" rel="noopener noreferrer">ENA Browser</a>
+          <a href="https://www.ncbi.nlm.nih.gov/gds" target="_blank" rel="noopener noreferrer">GEO Datasets</a>
           <a href="https://plants.ensembl.org/" target="_blank" rel="noopener noreferrer">Ensembl Plants</a>
         </div>
         <div className="footer-links">

@@ -53,8 +53,8 @@ function About() {
 
         <h2><span className="section-title-bar"></span> Developed At</h2>
         <p>
-          MIMI DB is developed at the <strong>Bioinformatics Centre</strong>,
-          <strong> Tamil Nadu Agricultural University (TNAU)</strong>, Coimbatore, India.
+          MIMI DB is developed at the <strong>Department of Plant Molecular biology & Bioinformatics</strong>,
+          <strong>Centre for Plant Molecular Biology & Biotechnology , Tamil Nadu Agricultural University (TNAU)</strong>, Coimbatore, India.
         </p>
 
         <h2><span className="section-title-bar"></span> Technology Stack</h2>
