@@ -35,6 +35,7 @@ function About() {
           <li><strong>Proso Millet</strong> (<em>Panicum miliaceum</em>) — Shortest growing period of all millets</li>
           <li><strong>Little Millet</strong> (<em>Panicum sumatrense</em>) — Lowest glycemic index among millets</li>
           <li><strong>Barnyard Millet</strong> (<em>Echinochloa esculenta</em>) — Lowest carbohydrate content among millets</li>
+          <li><strong>Kodo Millet</strong> (<em>Paspalum scrobiculatum</em>) — Traditional drought-resilient crop</li>
         </ul>
 
         <h2><span className="section-title-bar"></span> Data Sources</h2>

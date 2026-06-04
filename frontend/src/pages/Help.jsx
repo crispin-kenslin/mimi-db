@@ -19,7 +19,7 @@ function Help() {
 
         <h2><span className="section-title-bar"></span> Browsing Crops</h2>
         <p>
-          From the <strong>Home</strong> page, you can see all five minor millet species displayed
+          From the <strong>Home</strong> page, you can see all six minor millet species displayed
           horizontally with their images. Click on any millet to navigate to its dedicated crop page.
           Alternatively, hover over the <strong>Crops</strong> menu in the navigation bar to see a
           dropdown listing all species with quick links.

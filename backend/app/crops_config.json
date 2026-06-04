@@ -49,6 +49,16 @@
       "ploidy_level": "Hexaploid (2n=6x=54)",
       "genome_size_mb": 1340.0,
       "common_names": "Sanwa"
+    },
+    {
+      "name": "Kodo Millet",
+      "scientific_name": "Paspalum scrobiculatum",
+      "family": "Poaceae",
+      "description": "Core metadata record for Kodo Millet.",
+      "chromosome_number": null,
+      "ploidy_level": null,
+      "genome_size_mb": null,
+      "common_names": "Kodo"
     }
   ]
 }

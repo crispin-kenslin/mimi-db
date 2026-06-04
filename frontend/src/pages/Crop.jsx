@@ -3,11 +3,8 @@ import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import { ArrowLeft, Download, Dna, Database } from 'lucide-react';
 import FileListModal from '../components/FileListModal';
-// reference genome refseq moved to data/ and served at /data/reference-genome-refseq.json
 
 const toSlug = (name) => name.toLowerCase().trim().replace(/\s+/g, '-');
-
-// No stress icons - keep cards text-only per UX request
 
 function Crop() {
   const { slug } = useParams();
@@ -86,19 +83,15 @@ function Crop() {
         title={modalConfig.title}
       />
 
-      {/* Header Section */}
       <section className="crop-header">
         <div className="crop-header-inner">
           <Link to="/" className="crop-back-link">
             <ArrowLeft size={18} /> Back to Millets
           </Link>
           <h1 className="crop-title">{crop.name}</h1>
-          <p className="crop-scientific-name">{crop.scientific_name}</p>
-          <p className="crop-description">{crop.description || 'No description available.'}</p>
         </div>
       </section>
 
-      {/* Quick Access Section */}
       <section className="crop-section quick-access">
         <div className="section-inner">
           <div className="quick-access-grid">
@@ -131,15 +124,33 @@ function Crop() {
         <aside className="crop-sidebar">
           <nav>
             <ul>
-              <li><a href="#genomics">Genomics</a></li>
-              <li><a href="#transcriptomics">Transcriptomics</a></li>
-              <li><Link to={`/tools/jbrowse`}>Genome Browser</Link></li>
+              <li><a className="crop-nav-link" href="#genomics">Genomics</a></li>
+              <li><a className="crop-nav-link" href="#transcriptomics">Transcriptomics</a></li>
+              <li><Link className="crop-nav-link" to={`/tools/jbrowse`}>Genome Browser</Link></li>
             </ul>
           </nav>
         </aside>
 
         <div className="crop-content">
-          {/* Genomics Section */}
+          <section className="crop-section crop-overview">
+            <div className="section-inner">
+              <div className="crop-overview-card">
+                <div className="crop-overview-row">
+                  <span className="crop-overview-label">Scientific name</span>
+                  <span className="crop-overview-value">{crop.scientific_name || '—'}</span>
+                </div>
+                <div className="crop-overview-row">
+                  <span className="crop-overview-label">Description</span>
+                  <span className="crop-overview-value">{crop.description || 'No description available.'}</span>
+                </div>
+                <div className="crop-overview-row">
+                  <span className="crop-overview-label">Common names</span>
+                  <span className="crop-overview-value">{crop.common_names || '—'}</span>
+                </div>
+              </div>
+            </div>
+          </section>
+
           <section id="genomics" className="crop-section genomics-section">
             <div className="section-inner">
               <h2 className="section-title"><Dna size={24} /> Genomics Data</h2>
@@ -202,7 +213,6 @@ function Crop() {
             </div>
           </section>
 
-          {/* Transcriptomics Section */}
           <section id="transcriptomics" className="crop-section transcriptomics-section">
             <div className="section-inner">
               <h2 className="section-title"><Dna size={24} /> Transcriptomics Data</h2>
@@ -230,20 +240,19 @@ function Crop() {
             </div>
           </section>
 
-          {/* Metabolomics Section */}
           <section className="crop-section metabolomics-section">
-        <div className="section-inner">
-          <div className="section-header">
-            <h2 className="section-title">Metabolomics Data</h2>
-            <button
-              onClick={() => openFileModal('metabolomics', `${crop.name} - Metabolomics files`)}
-              className="btn-primary btn-sm"
-            >
-              <Download size={14} /> Browse Files
-            </button>
-          </div>
-        </div>
-      </section>
+            <div className="section-inner">
+              <div className="section-header">
+                <h2 className="section-title">Metabolomics Data</h2>
+                <button
+                  onClick={() => openFileModal('metabolomics', `${crop.name} - Metabolomics files`)}
+                  className="btn-primary btn-sm"
+                >
+                  <Download size={14} /> Browse Files
+                </button>
+              </div>
+            </div>
+          </section>
         </div>
       </div>
     </div>

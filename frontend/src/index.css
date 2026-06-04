@@ -1179,16 +1179,24 @@ button { cursor: pointer; font-family: inherit; }
 .crop-layout {
   display: flex;
   gap: 2rem;
+  padding: 0 2rem 2rem;
+  max-width: 1320px;
+  margin: 0 auto;
 }
 
 .crop-sidebar {
-  width: 200px;
-  flex: 0 0 200px;
+  width: 220px;
+  flex: 0 0 220px;
   position: sticky;
   top: 90px;
   max-height: calc(100vh - 100px);
   overflow-y: auto;
   align-self: flex-start;
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  padding: 0.9rem;
+  box-shadow: var(--shadow-sm);
 }
 
 .crop-sidebar nav ul {
@@ -1197,19 +1205,28 @@ button { cursor: pointer; font-family: inherit; }
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.65rem;
 }
 
-.crop-sidebar nav a {
+.crop-nav-link {
+  color: var(--gray-700);
+  padding: 0.6rem 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  background: linear-gradient(135deg, rgba(5, 150, 105, 0.06) 0%, rgba(17, 24, 39, 0.02) 100%);
+  transition: all 0.2s ease;
+}
+
+.crop-nav-link:hover {
+  border-color: var(--primary-200);
+  background: linear-gradient(135deg, rgba(5, 150, 105, 0.12) 0%, rgba(17, 24, 39, 0.04) 100%);
   color: var(--primary-800);
-  padding: 0.5rem 0.75rem;
-  display: inline-block;
-  border-radius: 6px;
-  background: transparent;
-}
-
-.crop-sidebar nav a:hover {
-  background: rgba(0,0,0,0.04);
+  transform: translateX(2px);
 }
 
 .crop-content {
@@ -1238,20 +1255,6 @@ button { cursor: pointer; font-family: inherit; }
   font-size: 2.5rem;
   font-weight: 800;
   margin-bottom: 0.5rem;
-}
-
-.crop-scientific-name {
-  font-size: 1.1rem;
-  font-style: italic;
-  color: rgba(255,255,255,0.9);
-  margin-bottom: 1rem;
-}
-
-.crop-description {
-  font-size: 1rem;
-  line-height: 1.6;
-  color: rgba(255,255,255,0.85);
-  max-width: 600px;
 }
 
 /* Crop Sections */
@@ -1290,6 +1293,40 @@ button { cursor: pointer; font-family: inherit; }
 
 .section-header .section-title {
   margin-bottom: 0;
+}
+
+.crop-overview {
+  padding-top: 0;
+}
+
+.crop-overview-card {
+  background: linear-gradient(135deg, var(--primary-50) 0%, var(--white) 100%);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  display: grid;
+  gap: 0.85rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.crop-overview-row {
+  display: grid;
+  grid-template-columns: minmax(140px, 180px) 1fr;
+  gap: 1rem;
+  align-items: start;
+}
+
+.crop-overview-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--gray-600);
+}
+
+.crop-overview-value {
+  font-size: 1rem;
+  color: var(--gray-800);
 }
 
 /* Quick Access Section */

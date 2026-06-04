@@ -1,12 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, BarChart3 } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import DEGTable from '../components/DEGTable';
 
 function DEGAnalysis() {
   const { cropSlug, stressType } = useParams();
   const [degStats, setDegStats] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'auto' });
+  }, [cropSlug, stressType]);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -51,7 +55,6 @@ function DEGAnalysis() {
 
   return (
     <div className="deg-analysis-page">
-      {/* Header */}
       <section className="deg-header">
         <Link to={`/crop/${cropSlug}`} className="deg-back-link">
           <ArrowLeft size={18} /> Back to {cropName}
@@ -60,7 +63,6 @@ function DEGAnalysis() {
         <p className="deg-page-subtitle">Transcriptomics analysis under {stressName} stress</p>
       </section>
 
-      {/* Statistics Section */}
       <section className="deg-stats-section">
         <div className="section-inner">
           {loading ? (
@@ -108,7 +110,6 @@ function DEGAnalysis() {
         </div>
       </section>
 
-      {/* DEG Table Section */}
       <section className="deg-table-section">
         <div className="section-inner">
           <h2 className="section-title">Gene Expression Data</h2>

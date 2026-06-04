@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-import { ArrowRight, Database, Dna, FlaskConical, BarChart3 } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 
 const toSlug = (name) => name.toLowerCase().trim().replace(/\s+/g, '-');
 const IMAGE_BASE = `${import.meta.env.BASE_URL}images`;
@@ -14,7 +14,6 @@ const CROP_IMAGES = {
   'Barnyard Millet': `${IMAGE_BASE}/barnyard_millet.png`,
 };
 
-/* ---- Animated counter hook ---- */
 function useCounter(target, duration = 2000) {
   const [count, setCount] = useState(0);
   const ref = useRef(null);
@@ -89,25 +88,22 @@ function Home() {
 
   return (
     <div className="fade-in">
-      {/* ===== HERO ===== */}
       <section className="hero-section">
         <div className="hero-inner">
           <h1 className="hero-title">
             Minor Millets<br />Multi-Omics Database
           </h1>
           <p className="hero-subtitle">
-            A comprehensive integrative resource bringing together genomic, transcriptomic,
-            and metabolomic data for six minor millet species from all publicly available databases —
+            A comprehensive integrative database for the genomic and transcriptomic data for  minor millet species from all publicly available databases —
             accessible in a single platform.
           </p> 
         </div>
       </section>
 
-      {/* ===== 6 MILLETS HORIZONTAL ===== */}
       <section className="millets-section">
         <div className="millets-section-title">
           <h2>Explore Minor Millets</h2>
-          <p>Click on a species to access its complete multi-omics data</p>
+          <p>Click on a species to access its genomic and transcriptomic data</p>
         </div>
         <div className="millets-row">
           {crops
@@ -134,7 +130,6 @@ function Home() {
         </div>
       </section>
 
-      {/* Features removed per request */}
     </div>
   );
 }

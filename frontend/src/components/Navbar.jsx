@@ -54,7 +54,6 @@ function Navbar() {
               Home
             </Link>
 
-            {/* Crops Dropdown */}
             <div className="nav-dropdown">
               <span className={`navbar-link ${location.pathname.startsWith('/crop') ? 'active' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                 Crops <ChevronDown size={14} />

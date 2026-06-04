@@ -8,7 +8,6 @@ function DEGTable({ cropName, stressType }) {
   const [sortConfig, setSortConfig] = useState({ key: 'log2FoldChange', direction: 'desc' });
   const [searchText, setSearchText] = useState('');
 
-  // Filter states
   const [showFilters, setShowFilters] = useState(true);
   const [log2FCThreshold, setLog2FCThreshold] = useState(0);
   const [regulation, setRegulation] = useState('all'); // all, up, down
@@ -29,7 +28,7 @@ function DEGTable({ cropName, stressType }) {
     { key: 'chr', label: 'Chromosome' },
     { key: 'start', label: 'Start Position' },
     { key: 'strand', label: 'Strand' },
-    { key: 'product', label: 'Product' },
+    { key: 'product', label: 'Protein' },
   ];
 
   useEffect(() => {
@@ -37,7 +36,6 @@ function DEGTable({ cropName, stressType }) {
       try {
         setLoading(true);
         const url = `/api/transcriptomics/csv/${cropName}/${stressType}`;
-        console.log('Fetching from:', url);
         const response = await fetch(url);
         if (!response.ok) {
           throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -140,7 +138,6 @@ function DEGTable({ cropName, stressType }) {
     setSequenceResult(null);
 
     try {
-      // quick pre-check: does this crop have a genome FASTA listed?
       try {
         const genomesResp = await fetch('/api/tools/genomes');
         if (genomesResp.ok) {
@@ -155,7 +152,6 @@ function DEGTable({ cropName, stressType }) {
           }
         }
       } catch (precheckErr) {
-        // ignore precheck errors and continue to allow servers without /genomes
       }
 
       const params = new URLSearchParams({
@@ -180,7 +176,6 @@ function DEGTable({ cropName, stressType }) {
             if (t) errMsg = t;
           }
         } catch (parseErr) {
-          // ignore JSON/text parse errors
         }
         throw new Error(errMsg);
       }
@@ -194,12 +189,13 @@ function DEGTable({ cropName, stressType }) {
     }
   };
 
+  const normalizeSequence = (sequence) => (sequence ? sequence.replace(/\s+/g, '') : '');
+
   const buildFastaText = () => {
     if (!sequenceResult || !selectedGene) return '';
     const header = `>${selectedGene.gene} ${sequenceResult.seqid}:${sequenceResult.start}-${sequenceResult.end}(${sequenceResult.strand})`;
-    const seq = sequenceResult.sequence || '';
-    const wrapped = seq.match(/.{1,80}/g)?.join('\n') || seq;
-    return `${header}\n${wrapped}`;
+    const seq = normalizeSequence(sequenceResult.sequence || '');
+    return `${header}\n${seq}`;
   };
 
   const copyToClipboard = async (text, label) => {
@@ -215,7 +211,6 @@ function DEGTable({ cropName, stressType }) {
     }
   };
 
-  // Apply all filters
   const filteredData = data.filter(row => {
     // Search filter
     if (searchText && !row.gene.toLowerCase().includes(searchText.toLowerCase()) &&
@@ -451,7 +446,7 @@ function DEGTable({ cropName, stressType }) {
               <th>log2FC</th>
               <th>p-value</th>
               <th>Adj p-value</th>
-              <th>Chromosome</th>
+              <th>Chromosome Accession</th>
               <th>Position</th>
               <th>Strand</th>
               <th>Product</th>
@@ -521,7 +516,7 @@ function DEGTable({ cropName, stressType }) {
                     <button
                       type="button"
                       className="btn-outline btn-sm"
-                      onClick={() => copyToClipboard(sequenceResult.sequence, 'Sequence')}
+                      onClick={() => copyToClipboard(normalizeSequence(sequenceResult.sequence), 'Sequence')}
                     >
                       Copy Sequence
                     </button>
@@ -537,7 +532,7 @@ function DEGTable({ cropName, stressType }) {
                   <textarea
                     className="gene-seq-textarea"
                     readOnly
-                    value={sequenceResult.sequence}
+                    value={normalizeSequence(sequenceResult.sequence)}
                     rows={12}
                   />
                   <div className="gene-seq-fasta-title">FASTA Format</div>
