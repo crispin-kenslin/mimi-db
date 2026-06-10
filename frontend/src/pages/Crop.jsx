@@ -15,6 +15,7 @@ function Crop() {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalConfig, setModalConfig] = useState({ cropName: '', dataType: '', title: '' });
   const [referenceGenomeMap, setReferenceGenomeMap] = useState(null);
+  const [genomesList, setGenomesList] = useState([]);
 
   useEffect(() => {
     const fetchCropData = async () => {
@@ -46,6 +47,20 @@ function Crop() {
       }
     };
     fetchStresses();
+  }, [crop]);
+
+  useEffect(() => {
+    const fetchGenomes = async () => {
+      if (!crop) return;
+      try {
+        const cropSlug = toSlug(crop.name);
+        const response = await axios.get(`/api/crops/slug/${cropSlug}/genomes`);
+        setGenomesList(response.data);
+      } catch (error) {
+        console.error('Error fetching genomes list:', error);
+      }
+    };
+    fetchGenomes();
   }, [crop]);
 
   useEffect(() => {
@@ -98,22 +113,22 @@ function Crop() {
             <a href={cropFtpIndexUrl} className="quick-access-card">
               <div className="card-icon"><Download size={32} /></div>
               <div className="card-content">
-                <h3>Download Files</h3>
-                <p>Browse all crop data</p>
+                <h3>Download Files for {crop.name}</h3>
+                <p>Browse all {crop.name} data</p>
               </div>
             </a>
             <Link to={`/tools/jbrowse`} className="quick-access-card">
               <div className="card-icon"><Dna size={32} /></div>
               <div className="card-content">
                 <h3>Genome Browser</h3>
-                <p>Explore JBrowse</p>
+                <p>Explore {crop.name} JBrowse</p>
               </div>
             </Link>
             <Link to={`/tools/blast`} className="quick-access-card">
               <div className="card-icon"><Database size={32} /></div>
               <div className="card-content">
                 <h3>BLAST Search</h3>
-                <p>Sequence similarity</p>
+                <p>{crop.name} Sequence similarity</p>
               </div>
             </Link>
           </div>
@@ -126,7 +141,6 @@ function Crop() {
             <ul>
               <li><a className="crop-nav-link" href="#genomics">Genomics</a></li>
               <li><a className="crop-nav-link" href="#transcriptomics">Transcriptomics</a></li>
-              <li><Link className="crop-nav-link" to={`/tools/jbrowse`}>Genome Browser</Link></li>
             </ul>
           </nav>
         </aside>
@@ -137,7 +151,7 @@ function Crop() {
               <div className="crop-overview-card">
                 <div className="crop-overview-row">
                   <span className="crop-overview-label">Scientific name</span>
-                  <span className="crop-overview-value">{crop.scientific_name || '—'}</span>
+                  <span className="crop-overview-value"><i>{crop.scientific_name || '—'}</i></span>
                 </div>
                 <div className="crop-overview-row">
                   <span className="crop-overview-label">Description</span>
@@ -174,6 +188,23 @@ function Crop() {
                     <span className="info-value">{crop.ploidy_level || '—'}</span>
                   </div>
                 </div>
+
+                {crop.taxid && (
+                  <div style={{ marginTop: '2rem', padding: '1.5rem', background: 'linear-gradient(135deg, var(--primary-600) 0%, var(--primary-800) 100%)', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-md)' }}>
+                    <h4 style={{ fontSize: '1rem', color: 'rgba(255,255,255,0.9)', marginBottom: '1rem', fontWeight: 600 }}>Other available genomes on NCBI</h4>
+                    <a
+                      href={`https://www.ncbi.nlm.nih.gov/datasets/genome/?taxon=${crop.taxid}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="ncbi-link-button"
+                      style={{ background: 'white', color: 'var(--primary-700)', fontWeight: 600, fontSize: '0.95rem', padding: '0.75rem 1.25rem', borderRadius: 'var(--radius-md)', display: 'inline-flex', alignItems: 'center', gap: '8px', textDecoration: 'none', transition: 'all 0.2s', boxShadow: 'var(--shadow-sm)' }}
+                      onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = 'var(--shadow-md)'; }}
+                      onMouseOut={(e) => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'var(--shadow-sm)'; }}
+                    >
+                      <Database size={16} /> View <i>{crop.scientific_name}</i> Genomes on NCBI
+                    </a>
+                  </div>
+                )}
               </div>
 
               <div className="data-subsection">
@@ -183,16 +214,20 @@ function Crop() {
                     <div className="ref-header">
                       <h4>{crop.name} — Reference Genome</h4>
                       <div className="ref-actions">
-                        <a href={`/api/files/ftp/${cropSlug}`} className="btn-link">Browse files</a>
+                        <a href={`/api/files/ftp/${cropSlug}`} className="btn-link">Browse files |</a>
                         <a href={`/tools/jbrowse?crop=${cropSlug}`} className="btn-link">Open JBrowse</a>
                       </div>
                     </div>
                     <div className="ref-grid">
                       <div className="ref-left">
-                        <div className="ref-item"><span className="label">Scientific name</span><span className="value">{crop.scientific_name || '—'}</span></div>
+                        <div className="ref-item"><span className="label">Scientific name</span><span className="value"><i>{crop.scientific_name || '—'}</i></span></div>
                         <div className="ref-item"><span className="label">Family</span><span className="value">{crop.family || '—'}</span></div>
                         <div className="ref-item"><span className="label">Genome Size</span><span className="value">{crop.genome_size_mb || '—'} Mb</span></div>
                         <div className="ref-item"><span className="label">Chromosomes</span><span className="value">{crop.chromosome_number || '—'}</span></div>
+                        <div className="ref-item"><span className="label">Bioproject</span><span className="value">{crop.bioproject || '—'}</span></div>
+                        <div className="ref-item"><span className="label">Cultivar</span><span className="value">{crop.cultivar || '—'}</span></div>
+                        <div className="ref-item"><span className="label">Publisher</span><span className="value">{crop.publisher || '—'}</span></div>
+
                       </div>
                       <div className="ref-right">
                         {referenceGenomeText.split('\n').slice(1).map((line, i) => {

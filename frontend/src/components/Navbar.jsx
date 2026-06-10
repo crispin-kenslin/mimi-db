@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { ChevronDown } from 'lucide-react';
-import logo from '../static/images/logo.png';
+import logo from '../static/images/logo.jpg';
 
 const toSlug = (name) => name.toLowerCase().trim().replace(/\s+/g, '-');
 const IMAGE_BASE = `${import.meta.env.BASE_URL}images`;
@@ -68,12 +68,16 @@ function Navbar() {
                     />
                     <div>
                       <div style={{ fontWeight: 600 }}>{crop.name}</div>
-                      <div className="nav-dropdown-item-sci">{crop.scientific_name.split(' ').slice(0,2).join(' ')}</div>
+                      <div className="nav-dropdown-item-sci">{crop.scientific_name.split(' ').slice(0, 2).join(' ')}</div>
                     </div>
                   </Link>
                 ))}
               </div>
             </div>
+
+            <Link to="/stresses" className={`navbar-link ${location.pathname === '/stresses' ? 'active' : ''}`}>
+              Stress
+            </Link>
 
             <Link to="/search" className={`navbar-link ${location.pathname === '/search' ? 'active' : ''}`}>
               Search

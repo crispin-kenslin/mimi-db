@@ -1,11 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
-from sqlalchemy.orm import Session
-from typing import List
 import os
+from typing import List, Dict, Any
 
-from .. import models, schemas
-from ..database import get_db
+from .. import csv_data
 
 crops_router = APIRouter(
     prefix="/crops",
@@ -17,9 +15,9 @@ transcriptomics_router = APIRouter(
     tags=["transcriptomics"],
 )
 
-@crops_router.get("/{crop_id}/transcriptomics", response_model=List[schemas.Transcriptomics])
-def read_transcriptomics(crop_id: int, db: Session = Depends(get_db)):
-    data = db.query(models.Transcriptomics).filter(models.Transcriptomics.crop_id == crop_id).all()
+@crops_router.get("/{crop_id}/transcriptomics")
+def read_transcriptomics(crop_id: int):
+    data = csv_data.get_transcriptomics_meta(crop_id)
     if not data:
         raise HTTPException(status_code=404, detail="Transcriptomics data not found for this crop")
     return data
@@ -86,4 +84,3 @@ def get_deg_csv(crop_name: str, stress_type: str):
     )
 
 router = crops_router
-

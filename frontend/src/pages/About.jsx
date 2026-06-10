@@ -24,7 +24,7 @@ function About() {
           for food security and sustainable agriculture. However, their multi-omics data is
           scattered across numerous repositories (NCBI, Phytozome, EBI, KEGG, etc.), making it
           difficult for researchers to access and compare data across species. MIMI DB addresses
-          this gap by aggregating and curating all available genomic, transcriptomic, and metabolomic
+          this gap by aggregating and curating all available genomic and transcriptomic
           data into an easy-to-use, visually rich web interface.
         </p>
 
@@ -38,17 +38,12 @@ function About() {
           <li><strong>Kodo Millet</strong> (<em>Paspalum scrobiculatum</em>) — Traditional drought-resilient crop</li>
         </ul>
 
-        <h2><span className="section-title-bar"></span> Data Sources</h2>
-        <p>
-          The data in MIMI DB has been curated from the following public repositories and publications:
-        </p>
+        <h2><span className="section-title-bar"></span> Key Features</h2>
         <ul>
-          <li><strong>NCBI</strong> — Genome assemblies, SRA transcriptome experiments, gene annotations</li>
-          <li><strong>Phytozome (JGI)</strong> — Plant genome annotations and comparative genomics data</li>
-          <li><strong>Ensembl Plants</strong> — Gene models and variation data</li>
-          <li><strong>MetaboLights (EBI)</strong> — Metabolomics experiment data</li>
-          <li><strong>ICRISAT</strong> — Millet genome project data</li>
-          <li><strong>Published literature</strong> — Peer-reviewed journals for analysis results and summary statistics</li>
+          <li><strong>Integrated multi-omics data on six minor millets</strong> — Explore integrated multi-omics data, encompassing genomics, transcriptomics, proteomics, metabolomics, and phenomics, for comprehensive analyses of six minor millet species.</li>
+          <li><strong>User-friendly interface</strong> Our platform offers a user-friendly interface designed for effortless data access and analysis, ensuring a seamless user experience. </li>
+          <li><strong>Genome and metabolome analysis tools</strong> Utilize a diverse array of tools for genome and metabolome analyses, such as sequence alignment, variant calling, gene expression analysis, pathway analysis, and metabolite identification.</li>
+          <li><strong>Regular updates</strong> We consistently update our platform with the latest data and analysis tools, guaranteeing access to the most current information and cutting-edge techniques. </li>
         </ul>
 
         <h2><span className="section-title-bar"></span> Developed At</h2>
@@ -56,13 +51,6 @@ function About() {
           MIMI DB is developed at the <strong>Department of Plant Molecular biology & Bioinformatics</strong>,
           <strong>Centre for Plant Molecular Biology & Biotechnology , Tamil Nadu Agricultural University (TNAU)</strong>, Coimbatore, India.
         </p>
-
-        <h2><span className="section-title-bar"></span> Technology Stack</h2>
-        <ul>
-          <li><strong>Backend:</strong> Python 3.11, FastAPI, SQLAlchemy, PostgreSQL</li>
-          <li><strong>Frontend:</strong> React 18, Vite, Recharts, Lucide Icons</li>
-          <li><strong>Database:</strong> PostgreSQL with JSONB for flexible omics metadata storage</li>
-        </ul>
 
         <h2><span className="section-title-bar"></span> Citation</h2>
         <p>

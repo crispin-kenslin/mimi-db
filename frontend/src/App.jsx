@@ -11,6 +11,7 @@ import ToolsJBrowse from './pages/ToolsJBrowse';
 import ToolsBlast from './pages/ToolsBlast';
 import Help from './pages/Help';
 import About from './pages/About';
+import Stresses from './pages/Stresses';
 
 function App() {
   return (
@@ -29,6 +30,7 @@ function App() {
             <Route path="/tools/blast" element={<ToolsBlast />} />
             <Route path="/help" element={<Help />} />
             <Route path="/about" element={<About />} />
+            <Route path="/stresses" element={<Stresses />} />
           </Routes>
         </main>
         <Footer />

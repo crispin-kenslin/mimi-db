@@ -522,3 +522,12 @@
   }
 }
 
+
+/* Sequence Modal Updates */
+.sequence-modal-content { background: var(--white); border-radius: var(--radius-lg); width: 90%; max-width: 700px; max-height: 85vh; display: flex; flex-direction: column; }
+.sequence-modal-header { display: flex; justify-content: space-between; align-items: center; padding: 1.5rem; border-bottom: 1px solid var(--gray-200); }
+.sequence-modal-body { padding: 1.5rem; overflow-y: auto; flex: 1; }
+.selected-gene-info { padding: 1rem; background: var(--gray-50); border-radius: var(--radius-md); margin-bottom: 1rem; border: 1px solid var(--gray-200); }
+.sequence-textarea { width: 100%; height: 200px; padding: 1rem; font-family: monospace; font-size: 0.85rem; border: 1px solid var(--gray-300); border-radius: var(--radius-md); resize: vertical; margin-top: 1rem; background: var(--gray-50); }
+.sequence-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+.sequence-actions { display: flex; gap: 0.5rem; align-items: center; }

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import SequenceModal from './SequenceModal';
 import './DEGTable.css';
 
 function DEGTable({ cropName, stressType }) {
@@ -14,11 +15,7 @@ function DEGTable({ cropName, stressType }) {
   const [pValueThreshold, setPValueThreshold] = useState(0.05);
   const [padjThreshold, setPadjThreshold] = useState(1);
   const [sequenceModalOpen, setSequenceModalOpen] = useState(false);
-  const [sequenceLoading, setSequenceLoading] = useState(false);
-  const [sequenceError, setSequenceError] = useState('');
   const [selectedGene, setSelectedGene] = useState(null);
-  const [sequenceResult, setSequenceResult] = useState(null);
-  const [copyStatus, setCopyStatus] = useState('');
 
   const sortFields = [
     { key: 'gene', label: 'Gene' },
@@ -130,85 +127,9 @@ function DEGTable({ cropName, stressType }) {
 
   const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 
-  const openGeneSequenceModal = async (row) => {
+  const openGeneSequenceModal = (row) => {
     setSelectedGene(row);
     setSequenceModalOpen(true);
-    setSequenceLoading(true);
-    setSequenceError('');
-    setSequenceResult(null);
-
-    try {
-      try {
-        const genomesResp = await fetch('/api/tools/genomes');
-        if (genomesResp.ok) {
-          const json = await genomesResp.json();
-          const matching = (json.genomes || []).find(
-            (g) => g.crop === cropName || g.crop === cropName.toLowerCase()
-          );
-          if (!matching || !matching.has_fasta) {
-            setSequenceError('No genome FASTA available for this crop; cannot retrieve sequence.');
-            setSequenceLoading(false);
-            return;
-          }
-        }
-      } catch (precheckErr) {
-      }
-
-      const params = new URLSearchParams({
-        crop: cropName,
-        seqid: row.chr,
-        start: String(row.start),
-        end: String(row.end),
-        strand: row.strand || '+',
-        gene: row.gene,
-      });
-
-      const response = await fetch(`/api/tools/gene-sequence?${params.toString()}`);
-      if (!response.ok) {
-        let errMsg = `HTTP ${response.status}`;
-        try {
-          const ct = response.headers.get('content-type') || '';
-          if (ct.includes('application/json')) {
-            const j = await response.json();
-            errMsg = j.detail || JSON.stringify(j);
-          } else {
-            const t = await response.text();
-            if (t) errMsg = t;
-          }
-        } catch (parseErr) {
-        }
-        throw new Error(errMsg);
-      }
-      const payload = await response.json();
-      setSequenceResult(payload);
-    } catch (err) {
-      console.error('Error fetching gene sequence:', err);
-      setSequenceError(String(err.message || err));
-    } finally {
-      setSequenceLoading(false);
-    }
-  };
-
-  const normalizeSequence = (sequence) => (sequence ? sequence.replace(/\s+/g, '') : '');
-
-  const buildFastaText = () => {
-    if (!sequenceResult || !selectedGene) return '';
-    const header = `>${selectedGene.gene} ${sequenceResult.seqid}:${sequenceResult.start}-${sequenceResult.end}(${sequenceResult.strand})`;
-    const seq = normalizeSequence(sequenceResult.sequence || '');
-    return `${header}\n${seq}`;
-  };
-
-  const copyToClipboard = async (text, label) => {
-    if (!text) return;
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopyStatus(`${label} copied`);
-      setTimeout(() => setCopyStatus(''), 1500);
-    } catch (err) {
-      console.error('Copy failed:', err);
-      setCopyStatus('Copy failed');
-      setTimeout(() => setCopyStatus(''), 1500);
-    }
   };
 
   const filteredData = data.filter(row => {
@@ -488,66 +409,12 @@ function DEGTable({ cropName, stressType }) {
         Showing {sortedData.length} of {data.length} genes
       </div>
 
-      {sequenceModalOpen && (
-        <div className="modal-overlay" onClick={() => setSequenceModalOpen(false)}>
-          <div className="modal-content gene-seq-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2 className="modal-title">Gene Sequence</h2>
-              <button className="modal-close" onClick={() => setSequenceModalOpen(false)}>×</button>
-            </div>
-
-            <div className="modal-body">
-              {selectedGene && (
-                <div className="gene-seq-meta">
-                  <div><strong>Gene:</strong> {selectedGene.gene}</div>
-                  <div><strong>Region:</strong> {selectedGene.chr}:{selectedGene.start}-{selectedGene.end} ({selectedGene.strand})</div>
-                </div>
-              )}
-
-              {sequenceLoading && <div className="deg-loading">Retrieving sequence...</div>}
-              {sequenceError && <div className="deg-error">{sequenceError}</div>}
-
-              {!sequenceLoading && !sequenceError && sequenceResult && (
-                <>
-                  <div className="gene-seq-meta">
-                    <div><strong>Length:</strong> {sequenceResult.length} bp</div>
-                  </div>
-                  <div className="gene-seq-actions">
-                    <button
-                      type="button"
-                      className="btn-outline btn-sm"
-                      onClick={() => copyToClipboard(normalizeSequence(sequenceResult.sequence), 'Sequence')}
-                    >
-                      Copy Sequence
-                    </button>
-                    <button
-                      type="button"
-                      className="btn-outline btn-sm"
-                      onClick={() => copyToClipboard(buildFastaText(), 'FASTA')}
-                    >
-                      Copy FASTA
-                    </button>
-                    {copyStatus && <span className="copy-status-text">{copyStatus}</span>}
-                  </div>
-                  <textarea
-                    className="gene-seq-textarea"
-                    readOnly
-                    value={normalizeSequence(sequenceResult.sequence)}
-                    rows={12}
-                  />
-                  <div className="gene-seq-fasta-title">FASTA Format</div>
-                  <textarea
-                    className="gene-seq-textarea"
-                    readOnly
-                    value={buildFastaText()}
-                    rows={8}
-                  />
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
+      <SequenceModal
+        isOpen={sequenceModalOpen}
+        onClose={() => setSequenceModalOpen(false)}
+        selectedGene={selectedGene}
+        cropName={cropName}
+      />
     </div>
   );
 }

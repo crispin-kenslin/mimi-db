@@ -1,18 +1,13 @@
 from __future__ import annotations
 
-import json
 from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-from . import models
-from .database import SessionLocal, engine
 from .routers import crops, files, genomics, metabolomics, transcriptomics
 from .routers import search, stats, tools
-
-models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Minor Millets Database API")
 
@@ -47,56 +42,3 @@ if JBROWSE_WEB_PATH.exists():
 @app.get("/health")
 def health_check():
     return {"status": "ok"}
-
-
-def seed_crops_from_config() -> None:
-    """Seed only core crop metadata from a local config file.
-
-    This avoids shipping any dummy omics records and keeps crop metadata editable
-    in a simple script-level JSON file.
-    """
-    config_path = Path(__file__).resolve().parent / "crops_config.json"
-    if not config_path.exists():
-        return
-
-    db = SessionLocal()
-    try:
-        existing = db.query(models.Crop).count()
-        if existing > 0:
-            return
-
-        payload = json.loads(config_path.read_text(encoding="utf-8"))
-        crop_rows = payload.get("crops", [])
-        for row in crop_rows:
-            db.add(models.Crop(**row))
-
-        db.commit()
-        print(f"Seeded {len(crop_rows)} crops from crops_config.json")
-    except Exception as exc:
-        db.rollback()
-        print(f"Crop seeding error: {exc}")
-    finally:
-        db.close()
-
-
-seed_crops_from_config()
-
-
-def remove_pearl_millet_if_present() -> None:
-    """Delete any Pearl Millet crop rows if present in the database."""
-    db = SessionLocal()
-    try:
-        pearl = db.query(models.Crop).filter(models.Crop.name == 'Pearl Millet').all()
-        if pearl:
-            for p in pearl:
-                db.delete(p)
-            db.commit()
-            print(f"Removed {len(pearl)} Pearl Millet crop row(s) from database")
-    except Exception as exc:
-        db.rollback()
-        print(f"Error removing Pearl Millet: {exc}")
-    finally:
-        db.close()
-
-
-remove_pearl_millet_if_present()
