@@ -358,73 +358,69 @@ def get_chart_data() -> Dict[str, Any]:
         
     crops = get_crops()
     genes_per_crop = []
-    
-    # Genes per crop from genomics.csv
-    genomics_rows = _read_csv("genomics.csv")
-    genes_by_crop_id = {}
-    for r in genomics_rows:
-        cid = _safe_int(r.get("crop_id"))
-        g = _safe_int(r.get("total_genes"))
-        if cid and g:
-            genes_by_crop_id[cid] = g
-            
-    for crop in crops:
-        cid = crop["id"]  # already an integer
-        genes = genes_by_crop_id.get(cid, 0)
-
-        if genes > 0:
-            genes_per_crop.append({
-                "name": crop["name"],
-                "genes": genes
-            })
-        
-    # Upregulated and Downregulated
     upreg = 0
     downreg = 0
-    
+
     for crop in crops:
         slug = crop["slug"]
         trans_dir = DATA_DIR / slug / "transcriptomics"
+
+        crop_genes = set()
+
         if trans_dir.exists() and trans_dir.is_dir():
-            for f in trans_dir.iterdir():
-                if f.is_file() and f.suffix.lower() == ".csv" and not f.name.startswith("."):
-                    try:
-                        with open(f, "r", encoding="utf-8", errors="ignore") as file:
-                            reader = csv.reader(file)
-                            header = next(reader, None)
-                            if not header:
+
+            for csv_file in trans_dir.glob("*.csv"):
+
+                try:
+                    with open(
+                        csv_file,
+                        "r",
+                        encoding="utf-8",   
+                        errors="ignore"
+                    ) as f:
+
+                        reader = csv.DictReader(f)
+
+                        for row in reader:
+
+                            gene = row.get("gene", "").strip()
+
+                            if gene:
+                                crop_genes.add(gene)
+
+                            try:
+                                log2fc = float(row["log2FoldChange"])
+
+                                if log2fc > 1:
+                                    upreg += 1
+                                elif log2fc < -1:
+                                    downreg += 1
+
+                            except (ValueError, TypeError, KeyError):
                                 continue
-                            
-                            header = [h.strip().lower() for h in header]
-                            idx_log2 = -1
-                            idx_padj = -1
-                            for i, h in enumerate(header):
-                                if h in ('log2foldchange', 'log2 fold change', 'log2fc', 'log2_fold_change'):
-                                    idx_log2 = i
-                                elif h in ('padj', 'adjusted p-value', 'adj p-value'):
-                                    idx_padj = i
-                                    
-                            if idx_log2 >= 0 and idx_padj >= 0:
-                                for row in reader:
-                                    if len(row) > max(idx_log2, idx_padj):
-                                        try:
-                                            log2fc = float(row[idx_log2])
-                                            padj = float(row[idx_padj])
-                                            if padj < 0.05:
-                                                if log2fc > 1:
-                                                    upreg += 1
-                                                elif log2fc < -1:
-                                                    downreg += 1
-                                        except ValueError:
-                                            pass
-                    except Exception:
-                        pass
-                        
+
+                except Exception as e:
+                    print(f"Error reading {csv_file}: {e}")
+
+        genes_per_crop.append({
+            "name": crop["name"],
+            "genes": len(crop_genes)
+        })
+
     _chart_data_cache = {
         "genes_per_crop": genes_per_crop,
         "deg_distribution": [
-            {"name": "Upregulated", "value": upreg, "fill": "#10b981"},
-            {"name": "Downregulated", "value": downreg, "fill": "#ef4444"}
+            {
+                "name": "Upregulated",
+                "value": upreg,
+                "fill": "#10b981"
+            },
+            {
+                "name": "Downregulated",
+                "value": downreg,
+                "fill": "#ef4444"
+            }
         ]
     }
+
     return _chart_data_cache

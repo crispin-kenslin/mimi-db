@@ -101,7 +101,7 @@ function Home() {
       <section className="hero-section">
         <div className="hero-inner">
           <h1 className="hero-title">
-            Minor Millets<br />Multi-Omics Database
+            Minor Millets Database
           </h1>
           <p className="hero-subtitle">
             A comprehensive integrative database for the genomic and transcriptomic data for  minor millet species from all publicly available databases —
