@@ -2,6 +2,15 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Search } from 'lucide-react';
 
+const cropColors = {
+  'Foxtail Millet': '#0d538d',
+  'Finger Millet': '#8b5cf6',
+  'Proso Millet': '#f5420b',
+  'Barnyard Millet': '#ec4899',
+  'Little Millet': '#06b6d4',
+  'Kodo Millet': '#ef4444',
+};
+
 function Stresses() {
   const [stresses, setStresses] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -36,7 +45,7 @@ function Stresses() {
         <div>
           <h2 className="section-title">
             <div className="section-title-bar"></div>
-            Available Stress Conditions
+            Available Stress Conditions in the database
           </h2>
           <p className="section-subtitle">
             Explore all transcriptomics stress conditions available across different millet species.
@@ -65,8 +74,7 @@ function Stresses() {
               const stressSlug = stress.condition.toLowerCase().replace(/ /g, '-').replace(/[^a-z0-9-]/g, '');
               
               // Generate dynamic colors based on condition name
-              const colors = ['#10b981', '#3b82f6', '#8b5cf6', '#f59e0b', '#ec4899', '#06b6d4'];
-              const colorCode = colors[stress.condition.length % colors.length];
+              const colorCode = cropColors[stress.crop] || '#6b7280';
               
               return (
                 <div key={idx} style={{ background: 'var(--white)', borderRadius: 'var(--radius-lg)', padding: '1.5rem', border: '1px solid var(--gray-200)', borderTop: `4px solid ${colorCode}`, boxShadow: 'var(--shadow-sm)', transition: 'transform 0.2s', display: 'flex', flexDirection: 'column', gap: '1rem' }} className="stress-card">

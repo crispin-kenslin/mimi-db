@@ -124,7 +124,7 @@ function Crop() {
                 <p>Explore {crop.name} JBrowse</p>
               </div>
             </Link>
-            <Link to={`/tools/blast`} className="quick-access-card">
+            <Link to={`/tools/blast/?crop=${toSlug(crop.name)}`} className="quick-access-card">
               <div className="card-icon"><Database size={32} /></div>
               <div className="card-content">
                 <h3>BLAST Search</h3>
@@ -214,7 +214,6 @@ function Crop() {
                     <div className="ref-header">
                       <h4>{crop.name} — Reference Genome</h4>
                       <div className="ref-actions">
-                        <a href={`/api/files/ftp/${cropSlug}`} className="btn-link">Browse files |</a>
                         <a href={`/tools/jbrowse?crop=${cropSlug}`} className="btn-link">Open JBrowse</a>
                       </div>
                     </div>
@@ -224,7 +223,7 @@ function Crop() {
                         <div className="ref-item"><span className="label">Family</span><span className="value">{crop.family || '—'}</span></div>
                         <div className="ref-item"><span className="label">Genome Size</span><span className="value">{crop.genome_size_mb || '—'} Mb</span></div>
                         <div className="ref-item"><span className="label">Chromosomes</span><span className="value">{crop.chromosome_number || '—'}</span></div>
-                        <div className="ref-item"><span className="label">Bioproject</span><span className="value">{crop.bioproject || '—'}</span></div>
+                        <div className="ref-item"><span className="label">Bioproject</span><span className="value">{crop.bioproject ? <a href={`https://www.ncbi.nlm.nih.gov/bioproject/?term=${crop.bioproject}`} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'underline', color: '#000' }}>{crop.bioproject}</a> : '—'}</span></div>
                         <div className="ref-item"><span className="label">Cultivar</span><span className="value">{crop.cultivar || '—'}</span></div>
                         <div className="ref-item"><span className="label">Publisher</span><span className="value">{crop.publisher || '—'}</span></div>
 

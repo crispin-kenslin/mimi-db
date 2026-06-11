@@ -101,10 +101,11 @@ function Home() {
       <section className="hero-section">
         <div className="hero-inner">
           <h1 className="hero-title">
-            Minor Millets Database
-          </h1>
+  <span className="hero-title-highlight">Mi</span>nor{" "}
+  <span className="hero-title-highlight">Mi</span>llets Database
+</h1>
           <p className="hero-subtitle">
-            A comprehensive integrative database for the genomic and transcriptomic data for  minor millet species from all publicly available databases —
+            A comprehensive integrative database for the genomic and transcriptomic data for  minor millet species from all publicly available databases -
             accessible in a single platform.
           </p>
 
@@ -128,17 +129,52 @@ function Home() {
                 <h3 className="chart-title">Genes Identified per Species</h3>
                 <div style={{ width: '100%', height: 300 }}>
                   <ResponsiveContainer>
-                    <BarChart data={chartData.genes_per_crop} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
-                      <XAxis dataKey="name" tick={{ fill: '#6b7280', fontSize: 12 }} axisLine={false} tickLine={false} angle={-45} textAnchor="end" />
-                      <YAxis tick={{ fill: '#6b7280', fontSize: 12 }} axisLine={false} tickLine={false} />
-                      <Tooltip cursor={{ fill: '#f3f4f6' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }} />
-                      <Bar dataKey="genes" fill="#10b981" radius={[4, 4, 0, 0]} maxBarSize={50}>
-                        {chartData.genes_per_crop.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={['#059669', '#10b981', '#34d399', '#3b82f6', '#60a5fa', '#8b5cf6', '#a78bfa'][index % 7]} />
-                        ))}
-                      </Bar>
-                    </BarChart>
+                   <BarChart
+  data={chartData.genes_per_crop}
+  margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
+>
+  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+  <XAxis
+    dataKey="name"
+    tick={{ fill: '#6b7280', fontSize: 12 }}
+    axisLine={false}
+    tickLine={false}
+    angle={-45}
+    textAnchor="end"
+  />
+  <YAxis
+    tick={{ fill: '#6b7280', fontSize: 12 }}
+    axisLine={false}
+    tickLine={false}
+  />
+  <Tooltip
+    cursor={{ fill: '#f3f4f6' }}
+    contentStyle={{
+      borderRadius: '8px',
+      border: 'none',
+      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+    }}
+  />
+  <Bar dataKey="genes" radius={[4, 4, 0, 0]} maxBarSize={50}>
+    {chartData.genes_per_crop.map((entry, index) => (
+      <Cell
+        key={`cell-${index}`}
+        fill={[
+          '#4E79A7',
+          '#F28E2B',
+          '#E15759',
+          '#76B7B2',
+          '#59A14F',
+          '#EDC948',
+          '#B07AA1',
+          '#FF9DA7',
+          '#9C755F',
+          '#BAB0AC',
+        ][index % 10]}
+      />
+    ))}
+  </Bar>
+</BarChart>
                   </ResponsiveContainer>
                 </div>
               </div>

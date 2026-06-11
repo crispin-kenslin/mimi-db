@@ -77,7 +77,10 @@ button { cursor: pointer; font-family: inherit; }
   justify-content: space-between;
   align-items: center;
 }
-
+.hero-title-highlight {
+  color: #f8863a; /* highlight color */
+  font-weight: 900;
+}
 /* ===========================
    NAVBAR
    =========================== */
@@ -96,11 +99,11 @@ button { cursor: pointer; font-family: inherit; }
   display: flex;
   justify-content: space-between;
   align-items: center;
-  height: 68px;
+  height: 100px;
 }
 .navbar-brand { display: flex; align-items: center; gap: 12px; }
 .navbar-brand-icon {
-  width: 75px; height: 75px;
+  width: 100px; height: 100px;
   display: flex; align-items: center; justify-content: center;
 }
 .navbar-logo {
@@ -110,7 +113,7 @@ button { cursor: pointer; font-family: inherit; }
 }
 .navbar-brand-text { display: flex; flex-direction: column; }
 .navbar-brand-title {
-  font-size: 1.1rem; font-weight: 800; color: var(--primary-800);
+  font-size: 2.5rem; font-weight: 800; color: var(--primary-800);
   letter-spacing: -0.02em; line-height: 1.2;
 }
 .navbar-brand-sub {
@@ -217,12 +220,12 @@ button { cursor: pointer; font-family: inherit; }
   0%, 100% { opacity: 1; } 50% { opacity: 0.3; }
 }
 .hero-title {
-  font-size: 3rem; font-weight: 900; color: var(--white);
+  font-size: 4rem; font-weight: 900; color: var(--white);
   line-height: 1.1; letter-spacing: -0.03em;
   margin-bottom: 1rem; max-width: 800px; margin-left: auto; margin-right: auto;
 }
 .hero-subtitle {
-  font-size: 1.05rem; color: var(--primary-200);
+  font-size: 1.25rem; color: var(--primary-200);
   max-width: 680px; line-height: 1.7; margin: 0 auto 2.5rem;
 }
 
@@ -779,16 +782,38 @@ button { cursor: pointer; font-family: inherit; }
 /* ===========================
    DATA TABLE
    =========================== */
-.data-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+.data-table { 
+  width: 100%; 
+  border-collapse: collapse; 
+  font-size: 0.85rem;
+  table-layout: fixed;
+}
+
 .data-table th {
-  background: var(--gray-50); font-weight: 600; color: var(--gray-700);
-  text-align: left; padding: 0.75rem 1rem; border-bottom: 2px solid var(--gray-200);
-  font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap;
+  background: var(--gray-50);
+  font-weight: 600;
+  color: var(--gray-700);
+  text-align: left;
+  padding: 0.75rem 1rem;
+  border-bottom: 2px solid var(--gray-200);
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: normal;
+  word-break: break-word;
 }
+
 .data-table td {
-  padding: 0.75rem 1rem; border-bottom: 1px solid var(--gray-100); color: var(--gray-700);
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--gray-100);
+  color: var(--gray-700);
+  white-space: normal;
+  word-break: break-word;
 }
-.data-table tr:hover td { background: var(--primary-50); }
+
+.data-table tr:hover td { 
+  background: var(--primary-50); 
+}
 
 /* ===========================
    STAT CARDS
