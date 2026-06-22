@@ -326,21 +326,30 @@ def get_stats_overview() -> Dict[str, Any]:
 
     num_stresses = len(stress_conditions)
 
-    # Count total genes from all transcriptomics CSV files
+   # Count total genes from all transcriptomics CSV files
     total_genes = 0
     for crop in crops:
         slug = crop["slug"]
         trans_dir = DATA_DIR / slug / "transcriptomics"
+
+        crop_genes = set()
+
         if trans_dir.exists() and trans_dir.is_dir():
             for f in trans_dir.iterdir():
                 if f.is_file() and f.suffix.lower() == ".csv" and not f.name.startswith("."):
                     try:
                         with open(f, "r", encoding="utf-8", errors="ignore") as file:
-                            lines = sum(1 for line in file if line.strip()) - 1
-                            if lines > 0:
-                                total_genes += lines
+                            reader = csv.DictReader(file)
+
+                            for row in reader:
+                                gene = row.get("gene", "").strip()
+                                if gene:
+                                    crop_genes.add(gene)
+
                     except Exception:
                         pass
+
+        total_genes += len(crop_genes)
 
     return {
         "num_crops": num_crops,
@@ -358,8 +367,7 @@ def get_chart_data() -> Dict[str, Any]:
         
     crops = get_crops()
     genes_per_crop = []
-    upreg = 0
-    downreg = 0
+    deg_distribution = {}
 
     for crop in crops:
         slug = crop["slug"]
@@ -370,6 +378,15 @@ def get_chart_data() -> Dict[str, Any]:
         if trans_dir.exists() and trans_dir.is_dir():
 
             for csv_file in trans_dir.glob("*.csv"):
+                stress = csv_file.stem.split("-")[-1]
+
+                if stress not in deg_distribution:
+                    deg_distribution[stress] = {
+                        "stress": stress.replace("-", " ").title(),
+                        "upregulated": 0,
+                        "downregulated": 0,
+                        "total": 0
+                    }
 
                 try:
                     with open(
@@ -392,9 +409,12 @@ def get_chart_data() -> Dict[str, Any]:
                                 log2fc = float(row["log2FoldChange"])
 
                                 if log2fc > 1:
-                                    upreg += 1
+                                    deg_distribution[stress]["upregulated"] += 1
+                                    deg_distribution[stress]["total"] += 1
+
                                 elif log2fc < -1:
-                                    downreg += 1
+                                    deg_distribution[stress]["downregulated"] += 1
+                                    deg_distribution[stress]["total"] += 1
 
                             except (ValueError, TypeError, KeyError):
                                 continue
@@ -407,20 +427,28 @@ def get_chart_data() -> Dict[str, Any]:
             "genes": len(crop_genes)
         })
 
+    deg_distribution_list = []
+
+    for stress, values in deg_distribution.items():
+        total = values["total"]
+
+        if total > 0:
+            up_pct = round((values["upregulated"] / total) * 100, 1)
+            down_pct = round((values["downregulated"] / total) * 100, 1)
+        else:
+            up_pct = 0
+            down_pct = 0
+
+        deg_distribution_list.append({
+            "stress": values["stress"],
+            "up_pct": up_pct,
+            "down_pct": down_pct
+        })
+
     _chart_data_cache = {
         "genes_per_crop": genes_per_crop,
-        "deg_distribution": [
-            {
-                "name": "Upregulated",
-                "value": upreg,
-                "fill": "#10b981"
-            },
-            {
-                "name": "Downregulated",
-                "value": downreg,
-                "fill": "#ef4444"
-            }
-        ]
+        "deg_distribution": deg_distribution_list
     }
+
 
     return _chart_data_cache

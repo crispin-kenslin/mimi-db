@@ -35,7 +35,7 @@ function Navbar() {
     <>
       <div className="topbar">
         <div className="topbar-inner">
-          <span>Tamil Nadu Agricultural University — Minor Millets Database</span>
+          <span>Tamil Nadu Agricultural University - Minor Millets Database</span>
         </div>
       </div>
       <nav className="navbar">
@@ -46,7 +46,7 @@ function Navbar() {
             </div>
             <div className="navbar-brand-text">
               <span className="navbar-brand-title">MIMI DB</span>
-              <span className="navbar-brand-sub">Minor Millets Database</span>
+              <span className="navbar-brand-sub"><u><b>Mi</b></u>nor <u><b>Mi</b></u>llets Database</span>
             </div>
           </Link>
           <div className="navbar-links">

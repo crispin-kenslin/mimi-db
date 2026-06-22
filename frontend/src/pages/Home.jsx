@@ -2,7 +2,17 @@ import React, { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { ArrowRight } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Cell,
+  Legend
+} from 'recharts';
 
 const toSlug = (name) => name.toLowerCase().trim().replace(/\s+/g, '-');
 const IMAGE_BASE = `${import.meta.env.BASE_URL}images`;
@@ -100,6 +110,7 @@ function Home() {
     <div className="fade-in">
       <section className="hero-section">
         <div className="hero-inner">
+          <p className="hero-subtitle">Welcome to</p>
           <h1 className="hero-title">
   <span className="hero-title-highlight">Mi</span>nor{" "}
   <span className="hero-title-highlight">Mi</span>llets Database
@@ -111,7 +122,7 @@ function Home() {
 
           <div className="hero-stats">
             <div className="hero-stat">
-              <AnimatedCounter value={stats.num_crops || 8} label="Millet Species" />
+              <AnimatedCounter value={stats.num_crops || 0} label="Millet Species" />
             </div>
             <Link to="/stresses" style={{ textDecoration: 'none' }}>
               <div className="hero-stat" style={{ cursor: 'pointer' }}>
@@ -179,19 +190,57 @@ function Home() {
                 </div>
               </div>
               <div className="chart-card">
-                <h3 className="chart-title">Total Transcriptomic DEGs</h3>
+                <h3 className="chart-title">Percentage of Differentially Expressed Genes by Stress</h3>
                 <div style={{ width: '100%', height: 300 }}>
                   <ResponsiveContainer>
-                    <PieChart>
-                      <Pie data={chartData.deg_distribution} cx="50%" cy="50%" innerRadius={70} outerRadius={110} paddingAngle={2} dataKey="value" stroke="none">
-                        {chartData.deg_distribution.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.fill} />
-                        ))}
-                      </Pie>
-                      <Tooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }} />
-                      <Legend verticalAlign="bottom" height={36} iconType="circle" />
-                    </PieChart>
-                  </ResponsiveContainer>
+  <BarChart
+    data={chartData.deg_distribution}
+    margin={{ top: 20, right: 10, left: 10, bottom: 20 }}
+  >
+    <CartesianGrid
+      strokeDasharray="3 3"
+      vertical={false}
+      stroke="#e5e7eb"
+    />
+
+    <XAxis
+      dataKey="stress"
+      tick={{ fill: '#6b7280', fontSize: 12 }}
+      axisLine={false}
+      tickLine={false}
+    />
+
+    <YAxis
+      tick={{ fill: '#6b7280', fontSize: 12 }}
+      axisLine={false}
+      tickLine={false}
+    />
+
+    <Tooltip
+      contentStyle={{
+        borderRadius: '8px',
+        border: 'none',
+        boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)',
+      }}
+    />
+
+    <Legend />
+
+    <Bar
+      dataKey="up_pct"
+      stackId="deg"
+      fill="#10b981"
+      name="Upregulated"
+    />
+
+    <Bar
+      dataKey="down_pct"
+      stackId="deg"
+      fill="#ef4444"
+      name="Downregulated"
+    />
+  </BarChart>
+</ResponsiveContainer>
                 </div>
               </div>
             </div>

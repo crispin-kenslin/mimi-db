@@ -141,6 +141,7 @@ function Crop() {
             <ul>
               <li><a className="crop-nav-link" href="#genomics">Genomics</a></li>
               <li><a className="crop-nav-link" href="#transcriptomics">Transcriptomics</a></li>
+              <li><a className="crop-nav-link" href="#metabolomics">Metabolomics</a></li>
             </ul>
           </nav>
         </aside>
@@ -191,7 +192,7 @@ function Crop() {
 
                 {crop.taxid && (
                   <div style={{ marginTop: '2rem', padding: '1.5rem', background: 'linear-gradient(135deg, var(--primary-600) 0%, var(--primary-800) 100%)', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-md)' }}>
-                    <h4 style={{ fontSize: '1rem', color: 'rgba(255,255,255,0.9)', marginBottom: '1rem', fontWeight: 600 }}>Other available genomes on NCBI</h4>
+                    <h4 style={{ fontSize: '1rem', color: 'rgba(255,255,255,0.9)', marginBottom: '1rem', fontWeight: 600 }}>Other available genomes of {crop.name} on NCBI</h4>
                     <a
                       href={`https://www.ncbi.nlm.nih.gov/datasets/genome/?taxon=${crop.taxid}`}
                       target="_blank"
@@ -274,7 +275,7 @@ function Crop() {
             </div>
           </section>
 
-          <section className="crop-section metabolomics-section">
+          <section id="metabolomics" className="crop-section metabolomics-section">
             <div className="section-inner">
               <div className="section-header">
                 <h2 className="section-title">Metabolomics Data</h2>
