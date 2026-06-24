@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+import KronaChart from '../components/KronaChart';
 import { ArrowRight } from 'lucide-react';
 import {
   BarChart,
@@ -189,6 +190,13 @@ function Home() {
                   </ResponsiveContainer>
                 </div>
               </div>
+              <div className="chart-card">
+  <h3 className="chart-title">Krona plot for gene distribution</h3>
+
+  <div className="chart-inner">
+    <KronaChart data={chartData.krona} />
+  </div>
+</div>
               <div className="chart-card">
                 <h3 className="chart-title">Percentage of Differentially Expressed Genes by Stress</h3>
                 <div style={{ width: '100%', height: 300 }}>

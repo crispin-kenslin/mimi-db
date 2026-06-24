@@ -369,9 +369,21 @@ def get_chart_data() -> Dict[str, Any]:
     genes_per_crop = []
     deg_distribution = {}
 
+    krona = {
+        "name": "MIMI-DB",
+        "children": []
+    }
+
     for crop in crops:
         slug = crop["slug"]
         trans_dir = DATA_DIR / slug / "transcriptomics"
+
+        crop_node = {
+            "name": crop["name"],
+            "children": []
+        }
+
+        stress_counts = {}
 
         crop_genes = set()
 
@@ -386,6 +398,12 @@ def get_chart_data() -> Dict[str, Any]:
                         "upregulated": 0,
                         "downregulated": 0,
                         "total": 0
+                    }
+
+                if stress not in stress_counts:
+                    stress_counts[stress] = {
+                        "up": 0,
+                        "down": 0
                     }
 
                 try:
@@ -411,16 +429,36 @@ def get_chart_data() -> Dict[str, Any]:
                                 if log2fc > 1:
                                     deg_distribution[stress]["upregulated"] += 1
                                     deg_distribution[stress]["total"] += 1
+                                    stress_counts[stress]["up"] += 1
 
                                 elif log2fc < -1:
                                     deg_distribution[stress]["downregulated"] += 1
                                     deg_distribution[stress]["total"] += 1
+                                    stress_counts[stress]["down"] += 1
 
                             except (ValueError, TypeError, KeyError):
                                 continue
 
                 except Exception as e:
                     print(f"Error reading {csv_file}: {e}")
+
+        for stress, values in stress_counts.items():
+
+            crop_node["children"].append({
+                "name": stress.upper(),
+                "children": [
+                    {
+                        "name": "Upregulated",
+                        "value": values["up"]
+                    },
+                    {
+                        "name": "Downregulated",
+                        "value": values["down"]
+                    }
+                ]
+            })
+
+        krona["children"].append(crop_node)
 
         genes_per_crop.append({
             "name": crop["name"],
@@ -447,8 +485,8 @@ def get_chart_data() -> Dict[str, Any]:
 
     _chart_data_cache = {
         "genes_per_crop": genes_per_crop,
-        "deg_distribution": deg_distribution_list
+        "deg_distribution": deg_distribution_list,
+        "krona": krona
     }
-
 
     return _chart_data_cache
