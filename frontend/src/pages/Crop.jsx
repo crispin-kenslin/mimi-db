@@ -279,12 +279,17 @@ function Crop() {
             <div className="section-inner">
               <div className="section-header">
                 <h2 className="section-title">Metabolomics Data</h2>
-                <button
-                  onClick={() => openFileModal('metabolomics', `${crop.name} - Metabolomics files`)}
-                  className="btn-primary btn-sm"
-                >
-                  <Download size={14} /> Browse Files
-                </button>
+                <div style={{display: 'flex', gap: '1rem'}}>
+                  <Link to={`/crop/${cropSlug}/metabolites`} className="btn-primary btn-sm">
+                    View Metabolites
+                  </Link>
+                  <button
+                    onClick={() => openFileModal('metabolomics', `${crop.name} - Metabolomics files`)}
+                    className="btn-outline btn-sm"
+                  >
+                    <Download size={14} /> Browse Files
+                  </button>
+                </div>
               </div>
             </div>
           </section>

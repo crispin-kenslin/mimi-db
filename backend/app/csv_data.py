@@ -131,7 +131,6 @@ def get_crop_detail(crop: Dict[str, Any]) -> Dict[str, Any]:
     detail = dict(crop)
     detail["genomics"] = get_genomics(crop_id)
     detail["transcriptomics"] = get_transcriptomics_meta(crop_id)
-    detail["metabolomics"] = get_metabolomics(crop_id)
     detail["analyses"] = get_analyses(crop_id)
     return detail
 
@@ -203,34 +202,47 @@ def get_transcriptomics_meta(crop_id: int) -> List[Dict[str, Any]]:
 
 # ─── Metabolomics ─────────────────────────────────────────────────────────────
 
-def get_metabolomics(crop_id: int) -> List[Dict[str, Any]]:
-    """Return metabolomics data for a crop."""
-    rows = _read_csv("metabolomics.csv")
+def get_metabolites_data(crop_slug: str) -> List[Dict[str, Any]]:
+    """Return metabolomics data for a crop from its data folder."""
+    metabolomics_dir = DATA_DIR / crop_slug / "metabolomics"
+    if not metabolomics_dir.exists() or not metabolomics_dir.is_dir():
+        return []
+
+    # Look for files ending with -metabolites.csv (e.g. finger-metabolites.csv)
+    # or just metabolites.csv
     results = []
-    for row in rows:
-        if _safe_int(row.get("crop_id")) != crop_id:
-            continue
-        results.append({
-            "id": _safe_int(row.get("id")),
-            "crop_id": crop_id,
-            "experiment_id": row.get("experiment_id", ""),
-            "data_link": row.get("data_link", ""),
-            "tissue": row.get("tissue", ""),
-            "metabolites_count": _safe_int(row.get("metabolites_count")),
-            "platform": row.get("platform", ""),
-            "stats": {
-                "flavonoids": _safe_int(row.get("flavonoids")),
-                "phenolic_acids": _safe_int(row.get("phenolic_acids")),
-                "amino_acids": _safe_int(row.get("amino_acids")),
-                "organic_acids": _safe_int(row.get("organic_acids")),
-                "lipids": _safe_int(row.get("lipids")),
-                "alkaloids": _safe_int(row.get("alkaloids")),
-                "terpenoids": _safe_int(row.get("terpenoids")),
-                "vitamins": _safe_int(row.get("vitamins")),
-            },
-            "top_metabolites": _safe_json(row.get("top_metabolites", "")),
-        })
+    for csv_file in metabolomics_dir.glob("*.csv"):
+        if csv_file.name.endswith("metabolites.csv"):
+            try:
+                with csv_file.open("r", encoding="utf-8", errors="ignore") as f:
+                    reader = csv.DictReader(f)
+                    for row in reader:
+                        results.append(row)
+            except Exception as e:
+                print(f"Error reading {csv_file}: {e}")
+            
+            # Since we found the metabolites file, we can break
+            break
+            
     return results
+
+def get_total_metabolites_count() -> int:
+    """Count total metabolites across all crops."""
+    total = 0
+    crops = get_crops()
+    for crop in crops:
+        slug = crop["slug"]
+        metabolomics_dir = DATA_DIR / slug / "metabolomics"
+        if metabolomics_dir.exists() and metabolomics_dir.is_dir():
+            for csv_file in metabolomics_dir.glob("*.csv"):
+                if csv_file.name.endswith("metabolites.csv"):
+                    try:
+                        with csv_file.open("r", encoding="utf-8", errors="ignore") as f:
+                            total += sum(1 for _ in f) - 1 # subtract header
+                    except Exception as e:
+                        pass
+    return max(0, total)
+
 
 
 # ─── Analyses ─────────────────────────────────────────────────────────────────
@@ -355,6 +367,7 @@ def get_stats_overview() -> Dict[str, Any]:
         "num_crops": num_crops,
         "num_stresses": num_stresses,
         "genes_identified": total_genes,
+        "metabolites_count": get_total_metabolites_count(),
     }
 
 

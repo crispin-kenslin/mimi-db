@@ -3,13 +3,13 @@ from fastapi import APIRouter, HTTPException
 from .. import csv_data
 
 router = APIRouter(
-    prefix="/crops",
+    prefix="/metabolites",
     tags=["metabolomics"],
 )
 
-@router.get("/{crop_id}/metabolomics")
-def read_metabolomics(crop_id: int):
-    data = csv_data.get_metabolomics(crop_id)
+@router.get("/{crop_slug}")
+def read_metabolites(crop_slug: str):
+    data = csv_data.get_metabolites_data(crop_slug)
     if not data:
         raise HTTPException(status_code=404, detail="Metabolomics data not found for this crop")
     return data

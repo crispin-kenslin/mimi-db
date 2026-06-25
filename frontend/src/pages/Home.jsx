@@ -73,8 +73,8 @@ function Home() {
     millet_species: 0,
     reference_genomes: 0,
     transcriptome_studies: 0,
-    metabolites_catalogued: 0,
-    predicted_genes: 0,
+    metabolites_count: 0,
+    genes_identified: 0,
   });
   const [chartData, setChartData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -132,6 +132,9 @@ function Home() {
             </Link>
             <div className="hero-stat">
               <AnimatedCounter value={stats.genes_identified || 0} label="Genes Identified" />
+            </div>
+            <div className="hero-stat">
+              <AnimatedCounter value={stats.metabolites_count || 0} label="Metabolites" />
             </div>
           </div>
 

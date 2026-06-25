@@ -12,6 +12,7 @@ import ToolsBlast from './pages/ToolsBlast';
 import Help from './pages/Help';
 import About from './pages/About';
 import Stresses from './pages/Stresses';
+import Metabolites from './pages/Metabolites';
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/crop/:slug" element={<Crop />} />
+            <Route path="/crop/:slug/metabolites" element={<Metabolites />} />
             <Route path="/crop/:cropSlug/stress/:stressType" element={<DEGAnalysis />} />
             <Route path="/search" element={<Search />} />
             <Route path="/tools" element={<Tools />} />
