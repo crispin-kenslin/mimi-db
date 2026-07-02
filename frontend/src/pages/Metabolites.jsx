@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Search, ExternalLink, FlaskConical } from 'lucide-react';
+import { ArrowLeft, Search, ExternalLink } from 'lucide-react';
 
 function Metabolites() {
   const { slug } = useParams();
@@ -33,23 +33,15 @@ function Metabolites() {
   }, [slug]);
 
   const filtered = metabolites.filter((m) => {
-    const term = searchTerm.toLowerCase();
-    const name = m['Search Name'] || m.compound_name || '';
-    const formula = m['Molecular Formula'] || m.molecular_formula || '';
-    const func = m.Function || m.function || '';
-    const cid = m['PubChem CID'] || m.pubchem_cid || '';
-    
-    return (
-      name.toLowerCase().includes(term) ||
-      formula.toLowerCase().includes(term) ||
-      func.toLowerCase().includes(term) ||
-      cid.toString().includes(term)
+    const term = searchTerm.toLowerCase().trim();
+    return Object.values(m).some((value) =>
+      String(value ?? "").toLowerCase().includes(term)
     );
   });
 
   const sorted = [...filtered].sort((a, b) => {
     if (!sortConfig.key) return 0;
-    
+
     // Helper to get value falling back to old keys if needed
     const getValue = (obj, key) => {
       if (key === 'compound_name') return obj['Search Name'] || obj.compound_name || '';
@@ -58,13 +50,14 @@ function Metabolites() {
       if (key === 'molecular_weight') return obj['Molecular Weight (g/mol)'] || obj.molecular_weight || '';
       if (key === 'smiles') return obj['SMILES'] || obj.smiles || '';
       if (key === 'inchikey') return obj['InChIKey'] || obj.inchikey || '';
-      if (key === 'function') return obj.Function || obj.function || '';
+      if (key === 'activity') return obj.Activity || obj.activity || '';
+      if (key === 'class') return obj.Class || obj.class || '';
       return obj[key] || '';
     };
 
     const aVal = getValue(a, sortConfig.key);
     const bVal = getValue(b, sortConfig.key);
-    
+
     if (sortConfig.key === 'molecular_weight' || sortConfig.key === 'pubchem_cid') {
       const numA = Number(aVal) || 0;
       const numB = Number(bVal) || 0;
@@ -95,7 +88,7 @@ function Metabolites() {
             <ArrowLeft size={18} /> Back to {cropName}
           </Link>
           <h1 className="metabolites-title">
-            <FlaskConical size={32} /> {cropName} — Metabolites
+            {cropName} - Metabolites - GC-MS Data of {cropName} seeds.
           </h1>
           <p className="metabolites-subtitle">
             Browse the metabolite compounds identified in {cropName}
@@ -118,7 +111,7 @@ function Metabolites() {
             />
             <input
               type="text"
-              placeholder="Search by compound, formula, or function..."
+              placeholder="Search by compound, formula..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="metabolites-search-input"
@@ -156,21 +149,21 @@ function Metabolites() {
                   </th>
                   <th>SMILES</th>
                   <th>InChIKey</th>
-                  <th onClick={() => handleSort('function')} style={{ cursor: 'pointer' }}>
-                    Function {getSortIcon('function')}
-                  </th>
+                  <th onClick={() => handleSort('activity')}>Activity {getSortIcon('activity')}</th>
+                  <th onClick={() => handleSort('class')}>Class {getSortIcon('class')}</th>
                 </tr>
               </thead>
               <tbody>
                 {sorted.map((m, idx) => {
-                  const name = m['Search Name'] || m.compound_name || '—';
+                  const name = m['Search Name'] || m.compound_name || '-';
                   const cid = m['PubChem CID'] || m.pubchem_cid || '';
-                  const formula = m['Molecular Formula'] || m.molecular_formula || '—';
-                  const weight = m['Molecular Weight (g/mol)'] || m.molecular_weight || '—';
+                  const formula = m['Molecular Formula'] || m.molecular_formula || '-';
+                  const weight = m['Molecular Weight (g/mol)'] || m.molecular_weight || '-';
                   const smiles = m['SMILES'] || m.smiles || '';
                   const inchikey = m['InChIKey'] || m.inchikey || '';
-                  const func = m.Function || m.function || '—';
-                  
+                  const activity = m.Activity || m.activity || '-';
+                  const metaboliteClass = m.Class || m.class || '-';
+
                   return (
                     <tr key={idx}>
                       <td className="metabolites-compound-name">{name}</td>
@@ -185,26 +178,19 @@ function Metabolites() {
                             {cid} <ExternalLink size={12} />
                           </a>
                         ) : (
-                          '—'
+                          '-'
                         )}
                       </td>
-                      <td className="metabolites-formula">{formula !== 'N/A' ? formula : '—'}</td>
-                      <td>{weight !== 'N/A' ? weight : '—'}</td>
+                      <td className="metabolites-formula">{formula !== 'N/A' ? formula : '-'}</td>
+                      <td>{weight !== 'N/A' ? weight : '-'}</td>
                       <td className="metabolites-smiles" title={smiles}>
-                        {smiles && smiles !== 'N/A'
-                          ? smiles.length > 30
-                            ? smiles.slice(0, 30) + '…'
-                            : smiles
-                          : '—'}
+                        {smiles && smiles !== 'N/A' ? smiles : '-'}
                       </td>
                       <td className="metabolites-inchikey" title={inchikey}>
-                        {inchikey && inchikey !== 'N/A'
-                          ? inchikey.length > 20
-                            ? inchikey.slice(0, 20) + '…'
-                            : inchikey
-                          : '—'}
+                        {inchikey && inchikey !== 'N/A' ? inchikey : '-'}
                       </td>
-                      <td className="metabolites-function">{func}</td>
+                      <td>{activity}</td>
+                      <td>{metaboliteClass}</td>
                     </tr>
                   );
                 })}
