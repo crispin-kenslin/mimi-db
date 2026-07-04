@@ -270,29 +270,28 @@
   width: 100%;
   border-collapse: collapse;
   font-size: 1rem;
-  table-layout: fixed;
+  table-layout: auto;
 }
 
 .deg-table thead {
-  background: #f5f5f5;
-  color: #333;
+  background: var(--primary-800);
+  color: #ffffff;
   position: relative;
   z-index: 10;
   display: table-header-group;
   width: 100%;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid var(--primary-900);
 }
 
 .deg-table th {
-  padding: 0.85rem;
+  padding: 0.85rem 1rem;
   text-align: left;
-  font-weight: 600;
+  font-weight: 700;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
   word-break: normal;
-  color: #333;
+  color: #ffffff;
   font-size: 0.95rem;
+  letter-spacing: 0.02em;
 }
 
 .deg-table th.sortable {
@@ -395,11 +394,9 @@
   max-width: none;
   word-break: break-word;
   overflow-wrap: break-word;
-  color: var(--primary-700);
+  color: var(--primary-800);
   font-weight: 500;
-  background-color: #f0fdf4;
-  padding: 1rem 0.85rem;
-  border-radius: 4px;
+  padding: 1rem;
 }
 
 .deg-loading,

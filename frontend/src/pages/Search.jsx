@@ -1,13 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
-import { Search as SearchIcon, Filter, ArrowRight } from 'lucide-react';
+import { Search as SearchIcon, Filter, ArrowRight, ExternalLink } from 'lucide-react';
 
 const toSlug = (name) => name.toLowerCase().trim().replace(/\s+/g, '-');
 
+function fmt(val, decimals = 3) {
+  if (val === null || val === undefined || isNaN(val)) return '—';
+  return Number(val).toFixed(decimals);
+}
+
+function fmtPval(val) {
+  if (val === null || val === undefined || isNaN(val)) return '—';
+  const n = Number(val);
+  return n < 0.001 ? n.toExponential(2) : n.toFixed(4);
+}
+
 function Search() {
   const [query, setQuery] = useState('');
-  const [searchType, setSearchType] = useState('crops');
+  const [searchType, setSearchType] = useState('genes');
   const [crops, setCrops] = useState([]);
   const [results, setResults] = useState([]);
   const [geneResults, setGeneResults] = useState([]);
@@ -15,40 +26,30 @@ function Search() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const fetchCrops = async () => {
-      try {
-        const response = await axios.get('/api/crops/');
-        setCrops(response.data);
-      } catch (error) {
-        console.error("Error fetching crops for search:", error);
-      }
-    };
-    fetchCrops();
+    axios.get('/api/crops/').then(r => setCrops(r.data)).catch(() => {});
   }, []);
 
   const handleSearch = async (e) => {
     e.preventDefault();
     setSearched(true);
     setGeneResults([]);
-    if (!query) {
-      setResults([]);
-      return;
-    }
+    setResults([]);
+    if (!query.trim()) return;
 
     if (searchType === 'crops') {
+      const q = query.toLowerCase();
       const filtered = crops.filter(c =>
-        c.name.toLowerCase().includes(query.toLowerCase()) ||
-        c.scientific_name.toLowerCase().includes(query.toLowerCase()) ||
-        (c.common_names && c.common_names.toLowerCase().includes(query.toLowerCase())) ||
-        (c.family && c.family.toLowerCase().includes(query.toLowerCase()))
+        c.name.toLowerCase().includes(q) ||
+        c.scientific_name.toLowerCase().includes(q) ||
+        (c.common_names && c.common_names.toLowerCase().includes(q)) ||
+        (c.family && c.family.toLowerCase().includes(q))
       );
       setResults(filtered);
     } else {
-      setResults([]);
       try {
         setLoading(true);
         const response = await axios.get('/api/search/genes', {
-          params: { q: query, limit: 10000 },
+          params: { q: query.trim(), limit: 500 },
         });
         setGeneResults(response.data.results || []);
       } catch (error) {
@@ -60,15 +61,23 @@ function Search() {
     }
   };
 
+  const noResults =
+    searched && query &&
+    ((searchType === 'crops' && results.length === 0) ||
+     (searchType === 'genes' && !loading && geneResults.length === 0));
+
   return (
     <div className="fade-in">
-      <section className="section" style={{ maxWidth: 860, margin: '0 auto' }}>
+      {/* Full-width wrapper — no max-width constraint */}
+      <div style={{ padding: '3rem 2rem' }}>
         <div style={{ marginBottom: '2rem' }}>
           <div className="section-title" style={{ marginBottom: '0.5rem' }}>
             <span className="section-title-bar"></span>
             Database Search
           </div>
-          <p className="section-subtitle">Query crops by name, scientific name, or common names</p>
+          <p className="section-subtitle">
+            Search crops by name · Search genes / proteins across all stress experiments
+          </p>
         </div>
 
         <div className="info-panel" style={{ marginBottom: '2rem' }}>
@@ -78,7 +87,7 @@ function Search() {
                 <Filter size={18} color="var(--primary-600)" />
                 <div style={{ display: 'flex', gap: '1.5rem' }}>
                   {['crops', 'genes'].map(type => (
-                    <label key={type} style={{ display: 'flex', gap: '6px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 500, color: 'var(--gray-700)' }}>
+                    <label key={type} style={{ display: 'flex', gap: '6px', cursor: 'pointer', fontSize: '1rem', fontWeight: 500, color: '#111' }}>
                       <input
                         type="radio"
                         value={type}
@@ -86,7 +95,7 @@ function Search() {
                         onChange={(e) => setSearchType(e.target.value)}
                         style={{ accentColor: 'var(--primary-600)' }}
                       />
-                      {type.charAt(0).toUpperCase() + type.slice(1)}
+                      {type === 'crops' ? 'Crops' : 'Genes / Proteins'}
                     </label>
                   ))}
                 </div>
@@ -98,7 +107,11 @@ function Search() {
                   <input
                     type="text"
                     className="search-input"
-                    placeholder={`Search ${searchType}...`}
+                    placeholder={
+                      searchType === 'crops'
+                        ? 'Search crop name, scientific name…'
+                        : 'Search gene ID or protein name…'
+                    }
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                   />
@@ -111,34 +124,29 @@ function Search() {
           </div>
         </div>
 
-        {searched && query && results.length === 0 && searchType === 'crops' && (
+        {/* Loading */}
+        {loading && (
           <div className="info-panel">
-            <div className="info-panel-body" style={{ textAlign: 'center', padding: '2rem', color: 'var(--gray-500)' }}>
-              No matching crops found for "{query}".
+            <div className="info-panel-body" style={{ textAlign: 'center', padding: '2rem', color: 'var(--gray-500)', fontSize: '1rem' }}>
+              Searching across all stress experiments…
             </div>
           </div>
         )}
 
-        {searched && query && searchType === 'genes' && loading && (
+        {/* No results */}
+        {noResults && !loading && (
           <div className="info-panel">
-            <div className="info-panel-body" style={{ textAlign: 'center', padding: '2rem', color: 'var(--gray-500)' }}>
-              Searching gene annotations...
+            <div className="info-panel-body" style={{ textAlign: 'center', padding: '2rem', color: 'var(--gray-500)', fontSize: '1rem' }}>
+              No results found for "<strong>{query}</strong>".
             </div>
           </div>
         )}
 
-        {searched && query && searchType === 'genes' && !loading && geneResults.length === 0 && (
-          <div className="info-panel">
-            <div className="info-panel-body" style={{ textAlign: 'center', padding: '2rem', color: 'var(--gray-500)' }}>
-              No matching gene entries found for "{query}".
-            </div>
-          </div>
-        )}
-
-        {results.length > 0 && (
+        {/* Crop results */}
+        {searchType === 'crops' && results.length > 0 && (
           <div>
-            <p style={{ fontSize: '0.85rem', color: 'var(--gray-500)', marginBottom: '1rem' }}>
-              Showing <strong>{results.length}</strong> result{results.length > 1 ? 's' : ''}
+            <p style={{ fontSize: '1rem', color: '#111', marginBottom: '1rem' }}>
+              Showing <strong>{results.length}</strong> crop{results.length > 1 ? 's' : ''}
             </p>
             {results.map(crop => (
               <Link to={`/crop/${toSlug(crop.name)}`} key={crop.id} className="crop-card" style={{ marginBottom: '1rem', flexDirection: 'row' }}>
@@ -154,46 +162,79 @@ function Search() {
           </div>
         )}
 
+        {/* Gene / Protein results */}
         {searchType === 'genes' && geneResults.length > 0 && (
           <div>
-            <p style={{ fontSize: '0.85rem', color: 'var(--gray-500)', marginBottom: '1rem' }}>
-              Showing <strong>{geneResults.length}</strong> gene hit{geneResults.length > 1 ? 's' : ''}
+            <p style={{ fontSize: '1rem', color: '#111', marginBottom: '1rem' }}>
+              Showing <strong>{geneResults.length}</strong> result{geneResults.length > 1 ? 's' : ''}
+              {geneResults.length === 500 && <span style={{ color: 'var(--accent-amber)', marginLeft: '0.5rem' }}>(limit reached — refine your query)</span>}
             </p>
             <div className="info-panel">
-              <div className="info-panel-body" style={{ overflowX: 'auto' }}>
-                <table className="data-table">
+              <div className="info-panel-body" style={{ overflowX: 'auto', padding: 0 }}>
+                <table className="data-table" style={{ fontSize: '1rem', color: '#111', tableLayout: 'auto', width: '100%' }}>
                   <thead>
                     <tr>
-                      <th>Crop</th>
-                      <th>Gene ID</th>
-                      <th>Gene Name</th>
-                      <th>Location</th>
-                      <th>Strand</th>
-                      <th>Product</th>
+                      <th style={{ color: '#111', fontSize: '1rem' }}>Crop</th>
+                      <th style={{ color: '#111', fontSize: '1rem' }}>Stress</th>
+                      <th style={{ color: '#111', fontSize: '1rem' }}>Gene ID</th>
+                      <th style={{ color: '#111', fontSize: '1rem' }}>Log2FC</th>
+                      <th style={{ color: '#111', fontSize: '1rem' }}>P-value</th>
+                      <th style={{ color: '#111', fontSize: '1rem' }}>Protein</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {geneResults.map((gene, index) => (
-                      <tr key={`${gene.crop}-${gene.gene_id || index}-${index}`}>
-                        <td>
-                          <Link to={`/crop/${gene.crop}`} className="btn-outline btn-sm" style={{ display: 'inline-flex' }}>
-                            {gene.crop}
-                          </Link>
-                        </td>
-                        <td style={{ fontFamily: 'monospace' }}>{gene.gene_id || '—'}</td>
-                        <td>{gene.gene_name || '—'}</td>
-                        <td style={{ fontFamily: 'monospace' }}>{gene.seqid}:{gene.start}-{gene.end}</td>
-                        <td>{gene.strand}</td>
-                        <td>{gene.product || '-'}</td>
-                      </tr>
-                    ))}
+                    {geneResults.map((row, idx) => {
+                      const cropLabel = row.crop
+                        .split('-')
+                        .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+                        .join(' ');
+                      const stressLabel = row.stress.charAt(0).toUpperCase() + row.stress.slice(1);
+                      const degUrl = `/crop/${row.crop}/stress/${row.stress}`;
+
+                      return (
+                        <tr key={idx}>
+                          <td style={{ color: '#111', whiteSpace: 'nowrap' }}>
+                            <Link to={`/crop/${row.crop}`} className="btn-outline btn-sm" style={{ display: 'inline-flex', whiteSpace: 'nowrap' }}>
+                              {cropLabel}
+                            </Link>
+                          </td>
+                          <td style={{ color: '#111', whiteSpace: 'nowrap' }}>
+                            <Link to={degUrl} style={{ color: 'var(--primary-600)', fontWeight: 500, textDecoration: 'underline' }}>
+                              {stressLabel}
+                            </Link>
+                          </td>
+                          <td style={{ fontFamily: 'monospace', color: '#111', whiteSpace: 'nowrap' }}>
+                            <Link
+                              to={degUrl}
+                              title={`Open ${stressLabel} DEG page`}
+                              style={{ color: 'var(--primary-700)', fontWeight: 600, textDecoration: 'underline', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                            >
+                              {row.gene_id || '—'}
+                              <ExternalLink size={11} />
+                            </Link>
+                          </td>
+                          <td style={{
+                            color: row.log2fc > 1 ? '#10b981' : row.log2fc < -1 ? '#ef4444' : '#111',
+                            fontWeight: (row.log2fc > 1 || row.log2fc < -1) ? 600 : 400,
+                            whiteSpace: 'nowrap'
+                          }}>
+                            {fmt(row.log2fc)}
+                          </td>
+                          <td style={{ color: '#111', whiteSpace: 'nowrap' }}>{fmtPval(row.pvalue)}</td>
+                          {/* Protein: full text, wraps naturally */}
+                          <td style={{ color: '#111', wordBreak: 'break-word', minWidth: 260 }}>
+                            {row.protein || '—'}
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
             </div>
           </div>
         )}
-      </section>
+      </div>
     </div>
   );
 }
