@@ -167,8 +167,12 @@ export default function KronaChart({ data }) {
           theme={{
             labels: {
               text: {
-                fontSize: 14,
-                fontWeight: 'bold',
+                fontSize: 18,
+                fontWeight: 700,
+                fill: '#1f2937',
+                stroke: '#ffffff',
+                strokeWidth: 3,
+                paintOrder: 'stroke',
               }
             }
           }}

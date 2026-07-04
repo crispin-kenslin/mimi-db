@@ -88,7 +88,7 @@ function Metabolites() {
             <ArrowLeft size={18} /> Back to {cropName}
           </Link>
           <h1 className="metabolites-title">
-            {cropName} - Metabolites - GC-MS Data of {cropName} seeds.
+            {cropName} - Metabolites profile from GC-MS Analysis
           </h1>
           <p className="metabolites-subtitle">
             Browse the metabolite compounds identified in {cropName}

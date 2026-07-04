@@ -277,19 +277,25 @@ function Crop() {
 
           <section id="metabolomics" className="crop-section metabolomics-section">
             <div className="section-inner">
-              <div className="section-header">
-                <h2 className="section-title">Metabolomics Data</h2>
-                <div style={{display: 'flex', gap: '1rem'}}>
-                  <Link to={`/crop/${cropSlug}/metabolites`} className="btn-primary btn-sm">
-                    View Metabolites
-                  </Link>
-                  <button
-                    onClick={() => openFileModal('metabolomics', `${crop.name} - Metabolomics files`)}
-                    className="btn-outline btn-sm"
-                  >
-                    <Download size={14} /> Browse Files
-                  </button>
-                </div>
+              <h2 className="section-title"><Database size={24} /> Metabolomics Data</h2>
+              
+              <div className="stress-cards-grid" style={{ marginBottom: '1.5rem' }}>
+                <Link to={`/crop/${cropSlug}/metabolites`} className="stress-card no-icon">
+                  <div className="stress-content">
+                    <h3>Seed</h3>
+                    <p>Click to view metabolites</p>
+                  </div>
+                </Link>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
+                <button
+                  onClick={() => openFileModal('metabolomics', `${crop.name} - Metabolomics files`)}
+                  className="btn-outline btn-sm"
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                >
+                  <Download size={14} /> Browse Metabolomics Files
+                </button>
               </div>
             </div>
           </section>

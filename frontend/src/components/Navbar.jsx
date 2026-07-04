@@ -46,7 +46,7 @@ function Navbar() {
             </div>
             <div className="navbar-brand-text">
               <span className="navbar-brand-title">MIMI DB</span>
-              <span className="navbar-brand-sub"><u><b>Mi</b></u>nor <u><b>Mi</b></u>llets Database</span>
+              <span className="navbar-brand-sub"><b>Mi</b>nor <b>Mi</b>llets <b>D</b>ata<b>B</b>ase</span>
             </div>
           </Link>
           <div className="navbar-links">

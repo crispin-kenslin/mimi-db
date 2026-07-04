@@ -113,11 +113,10 @@ function Home() {
         <div className="hero-inner">
           <p className="hero-subtitle">Welcome to</p>
           <h1 className="hero-title">
-  <span className="hero-title-highlight">Mi</span>nor{" "}
-  <span className="hero-title-highlight">Mi</span>llets Database
-</h1>
+            Minor Millets DataBase
+          </h1>
           <p className="hero-subtitle">
-            A comprehensive integrative database for the genomic and transcriptomic data for  minor millet species from all publicly available databases -
+            A comprehensive integrative database for the genomic, transcriptomic and metabolomic data for  minor millet species from public databases -
             accessible in a single platform.
           </p>
 
@@ -140,118 +139,118 @@ function Home() {
 
           {chartData && (
             <div className="stats-charts-section fade-in">
-              <div className="chart-card">
+              <div className="chart-card" style={{ display: 'flex', flexDirection: 'column' }}>
                 <h3 className="chart-title">Genes Identified per Species</h3>
-                <div style={{ width: '100%', height: 300 }}>
+                <div style={{ width: '100%', flex: 1, minHeight: 300 }}>
                   <ResponsiveContainer>
-                   <BarChart
-  data={chartData.genes_per_crop}
-  margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
->
-  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
-  <XAxis
-    dataKey="name"
-    tick={{ fill: '#6b7280', fontSize: 12 }}
-    axisLine={false}
-    tickLine={false}
-    angle={-45}
-    textAnchor="end"
-  />
-  <YAxis
-    tick={{ fill: '#6b7280', fontSize: 12 }}
-    axisLine={false}
-    tickLine={false}
-  />
-  <Tooltip
-    cursor={{ fill: '#f3f4f6' }}
-    contentStyle={{
-      borderRadius: '8px',
-      border: 'none',
-      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-    }}
-  />
-  <Bar dataKey="genes" radius={[4, 4, 0, 0]} maxBarSize={50}>
-    {chartData.genes_per_crop.map((entry, index) => (
-      <Cell
-        key={`cell-${index}`}
-        fill={[
-          '#4E79A7',
-          '#F28E2B',
-          '#E15759',
-          '#76B7B2',
-          '#59A14F',
-          '#EDC948',
-          '#B07AA1',
-          '#FF9DA7',
-          '#9C755F',
-          '#BAB0AC',
-        ][index % 10]}
-      />
-    ))}
-  </Bar>
-</BarChart>
+                    <BarChart
+                      data={chartData.genes_per_crop.filter(crop => crop.genes > 0)}
+                      margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+                      <XAxis
+                        dataKey="name"
+                        tick={{ fill: '#000000ff', fontSize: 16 }}
+                        axisLine={false}
+                        tickLine={false}
+                        angle={-45}
+                        textAnchor="end"
+                      />
+                      <YAxis
+                        tick={{ fill: '#6b7280', fontSize: 12 }}
+                        axisLine={false}
+                        tickLine={false}
+                      />
+                      <Tooltip
+                        cursor={{ fill: '#f3f4f6' }}
+                        contentStyle={{
+                          borderRadius: '8px',
+                          border: 'none',
+                          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                        }}
+                      />
+                      <Bar dataKey="genes" radius={[4, 4, 0, 0]} maxBarSize={50}>
+                        {chartData.genes_per_crop.map((entry, index) => (
+                          <Cell
+                            key={`cell-${index}`}
+                            fill={[
+                              '#4E79A7',
+                              '#F28E2B',
+                              '#E15759',
+                              '#76B7B2',
+                              '#59A14F',
+                              '#EDC948',
+                              '#B07AA1',
+                              '#FF9DA7',
+                              '#9C755F',
+                              '#BAB0AC',
+                            ][index % 10]}
+                          />
+                        ))}
+                      </Bar>
+                    </BarChart>
                   </ResponsiveContainer>
                 </div>
               </div>
               <div className="chart-card">
-  <h3 className="chart-title">Krona plot for gene distribution</h3>
+                <h3 className="chart-title">Gene distribution across species</h3>
 
-  <div className="chart-inner">
-    <KronaChart data={chartData.krona} />
-  </div>
-</div>
-              <div className="chart-card">
+                <div className="chart-inner">
+                  <KronaChart data={chartData.krona} />
+                </div>
+              </div>
+              <div className="chart-card" style={{ display: 'flex', flexDirection: 'column' }}>
                 <h3 className="chart-title">Percentage of Differentially Expressed Genes by Stress</h3>
-                <div style={{ width: '100%', height: 300 }}>
+                <div style={{ width: '100%', flex: 1, minHeight: 300 }}>
                   <ResponsiveContainer>
-  <BarChart
-    data={chartData.deg_distribution}
-    margin={{ top: 20, right: 10, left: 10, bottom: 20 }}
-  >
-    <CartesianGrid
-      strokeDasharray="3 3"
-      vertical={false}
-      stroke="#e5e7eb"
-    />
+                    <BarChart
+                      data={chartData.deg_distribution}
+                      margin={{ top: 20, right: 10, left: 10, bottom: 20 }}
+                    >
+                      <CartesianGrid
+                        strokeDasharray="3 3"
+                        vertical={false}
+                        stroke="#e5e7eb"
+                      />
 
-    <XAxis
-      dataKey="stress"
-      tick={{ fill: '#6b7280', fontSize: 12 }}
-      axisLine={false}
-      tickLine={false}
-    />
+                      <XAxis
+                        dataKey="stress"
+                        tick={{ fill: '#000000ff', fontSize: 12 }}
+                        axisLine={false}
+                        tickLine={false}
+                      />
 
-    <YAxis
-      tick={{ fill: '#6b7280', fontSize: 12 }}
-      axisLine={false}
-      tickLine={false}
-    />
+                      <YAxis
+                        tick={{ fill: '#6b7280', fontSize: 12 }}
+                        axisLine={false}
+                        tickLine={false}
+                      />
 
-    <Tooltip
-      contentStyle={{
-        borderRadius: '8px',
-        border: 'none',
-        boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)',
-      }}
-    />
+                      <Tooltip
+                        contentStyle={{
+                          borderRadius: '8px',
+                          border: 'none',
+                          boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)',
+                        }}
+                      />
 
-    <Legend />
+                      <Legend />
 
-    <Bar
-      dataKey="up_pct"
-      stackId="deg"
-      fill="#10b981"
-      name="Upregulated"
-    />
+                      <Bar
+                        dataKey="up_pct"
+                        stackId="deg"
+                        fill="#10b981"
+                        name="Upregulated"
+                      />
 
-    <Bar
-      dataKey="down_pct"
-      stackId="deg"
-      fill="#ef4444"
-      name="Downregulated"
-    />
-  </BarChart>
-</ResponsiveContainer>
+                      <Bar
+                        dataKey="down_pct"
+                        stackId="deg"
+                        fill="#ef4444"
+                        name="Downregulated"
+                      />
+                    </BarChart>
+                  </ResponsiveContainer>
                 </div>
               </div>
             </div>
@@ -262,7 +261,7 @@ function Home() {
       <section className="millets-section">
         <div className="millets-section-title">
           <h2>Explore Minor Millets</h2>
-          <p>Click on a species to access its genomic and transcriptomic data</p>
+          <p>Click on a species to access its Omics data</p>
         </div>
         <div className="millets-row">
           {crops
