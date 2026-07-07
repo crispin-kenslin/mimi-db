@@ -109,7 +109,7 @@ function Help() {
           </p>
 
           <img
-            src="/images/help/home.png"
+            src={`${IMAGE_BASE}/help/home.png`}
             alt="Home page showing summary statistics and species cards"
             style={{
               display: 'block',
@@ -120,7 +120,6 @@ function Help() {
               margin: '1rem auto'
             }}
           />
-
 
           <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '0.5rem', color: 'var(--primary-700)' }}>Summary Statistics Bar</h3>
           <p>Four counters animate on scroll, showing the total number of <em>Millet Species</em>,
@@ -134,7 +133,7 @@ function Help() {
           </ul>
 
           <img
-            src="/images/help/charts.png"
+            src={`${IMAGE_BASE}/help/charts.png`}
             alt="Home page showing summary statistics and species cards"
             style={{
               display: 'block',
@@ -157,7 +156,7 @@ function Help() {
             species card on the Home page or selecting the species from the <em>Crops</em> navbar dropdown.
           </p>
           <img
-            src="/images/help/crops.png"
+            src={`${IMAGE_BASE}/help/crops.png`}
             alt="Home page showing summary statistics and species cards"
             style={{
               display: 'block',
@@ -194,7 +193,7 @@ function Help() {
             all genome-level data for the selected species.
           </p>
           <img
-            src="/images/help/genomics.png"
+            src={`${IMAGE_BASE}/help/genomics.png`}
             alt="Home page showing summary statistics and species cards"
             style={{
               display: 'block',
@@ -230,7 +229,7 @@ function Help() {
             analysed for differentially expressed genes (DEGs).
           </p>
           <img
-            src="/images/help/transcriptomics.png"
+            src={`${IMAGE_BASE}/help/transcriptomics.png`}
             alt="Home page showing summary statistics and species cards"
             style={{
               display: 'block',
@@ -259,7 +258,7 @@ function Help() {
             It shows the full differentially expressed gene (DEG) dataset for one stress experiment.
           </p>
           <img
-            src="/images/help/deg.png"
+            src={`${IMAGE_BASE}/help/deg.png`}
             alt="Home page showing summary statistics and species cards"
             style={{
               display: 'block',
@@ -288,7 +287,7 @@ function Help() {
           <p>Hover over any point for a tooltip showing the gene ID, protein, Log2FC, padj, and regulation status.
             <strong> Click a point</strong> to open the <em>Sequence Viewer</em> modal for that gene.</p>
           <img
-            src="/images/help/volcano-plot.png"
+            src={`${IMAGE_BASE}/help/volcano-plot.png`}
             alt="Home page showing summary statistics and species cards"
             style={{
               display: 'block',
@@ -313,7 +312,7 @@ function Help() {
             millet species. Click the <em>Seed</em> card on the Crop page to open the full metabolites table.
           </p>
           <img
-            src="/images/help/metabolites.png"
+            src={`${IMAGE_BASE}/help/metabolites.png`}
             alt="Home page showing summary statistics and species cards"
             style={{
               display: 'block',
@@ -342,7 +341,7 @@ function Help() {
             with the radio buttons at the top.
           </p>
           <img
-            src="/images/help/search.png"
+            src={`${IMAGE_BASE}/help/search.png`}
             alt="Home page showing summary statistics and species cards"
             style={{
               display: 'block',
@@ -388,7 +387,7 @@ function Help() {
             and click <em>Run BLAST</em>. Results appear in a table with hit information, e-values, identity
             percentages, and alignment scores.</p>
           <img
-            src="/images/help/blast.png"
+            src={`${IMAGE_BASE}/help/blast.png`}
             alt="Home page showing summary statistics and species cards"
             style={{
               display: 'block',
@@ -409,7 +408,7 @@ function Help() {
           </ul>
           <p>Select the species from the JBrowse controls to load the appropriate reference genome assembly.</p>
           <img
-            src="/images/help/jb.png"
+            src={`${IMAGE_BASE}/help/jb.png`}
             alt="Home page showing summary statistics and species cards"
             style={{
               display: 'block',
