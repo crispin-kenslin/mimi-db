@@ -63,7 +63,7 @@ function Help() {
     <div className="fade-in">
       <div className="page-header">
         <h1>Help &amp; User Guide</h1>
-        <p>Step-by-step instructions for every page and section of MIMI DB</p>
+        <p>Step-by-step instructions for every page and section of MilletGenesDB</p>
       </div>
 
       {/* Quick-nav links */}
@@ -103,7 +103,7 @@ function Help() {
         {/* ── Home Page ── */}
         <HelpCard id="home" title="Home Page">
           <p>
-            The <strong>Home page</strong> is your entry point to MIMI DB. It displays summary
+            The <strong>Home page</strong> is your entry point to MilletGenesDB. It displays summary
             statistics (number of species, stress conditions, genes identified, and metabolites),
             three interactive charts, and quick-access cards for each millet species.
           </p>
@@ -400,7 +400,7 @@ function Help() {
           />
 
           <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '0.5rem', marginTop: '1rem', color: 'var(--primary-700)' }}>JBrowse Genome Browser</h3>
-          <p>JBrowse 2 is an interactive genome browser embedded directly in MIMI DB. It lets you:</p>
+          <p>JBrowse 2 is an interactive genome browser embedded directly in MilletGenesDB. It lets you:</p>
           <ul style={{ paddingLeft: '1.5rem', marginBottom: '0.75rem' }}>
             <li>Navigate chromosomal regions with pan and zoom</li>
             <li>View gene annotations from GFF3 files</li>
@@ -424,7 +424,7 @@ function Help() {
         {/* ── Downloading ── */}
         <HelpCard id="download" title="Downloading Data">
           <p>
-            All data in MIMI DB can be downloaded for offline analysis. Files are organised by crop and
+            All data in MilletGenesDB can be downloaded for offline analysis. Files are organised by crop and
             data type.
           </p>
 
@@ -443,7 +443,7 @@ function Help() {
             metabolomics data for that species.</p>
 
           <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '0.5rem', marginTop: '1rem', color: 'var(--primary-700)' }}>External Databases</h3>
-          <p>MIMI DB also links out to external repositories:</p>
+          <p>MilletGenesDB also links out to external repositories:</p>
           <ul style={{ paddingLeft: '1.5rem' }}>
             <li><strong>NCBI</strong> — genome assemblies, BioProjects, and SRA experiments</li>
             <li><strong>Phytozome</strong> — plant genome browser and downloads</li>

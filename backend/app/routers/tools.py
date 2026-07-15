@@ -15,7 +15,7 @@ from ..services.data_catalog import DATA_DIR, build_genome_resources, preferred_
 
 router = APIRouter(prefix="/tools", tags=["tools"])
 
-BLAST_CACHE_DIR = Path(os.getenv("MIMI_BLAST_CACHE_DIR", str(Path(tempfile.gettempdir()) / "mimi-db-blast-cache")))
+BLAST_CACHE_DIR = Path(os.getenv("MIMI_BLAST_CACHE_DIR", str(Path(tempfile.gettempdir()) / "MilletGenesDB-blast-cache")))
 BLAST_CACHE_DIR.mkdir(parents=True, exist_ok=True)
 JBROWSE_CACHE_DIR = Path(os.getenv("MIMI_JBROWSE_CACHE_DIR", str(DATA_DIR / ".jbrowse-cache")))
 JBROWSE_CACHE_DIR.mkdir(parents=True, exist_ok=True)

@@ -86,7 +86,7 @@ export default function KronaChart({ data }) {
   const getColor = (node) => {
     const path = node.data?._path || node._path || node.id;
     // Strip root prefix for lookup
-    const stripped = path.replace(/^MIMI-DB::/, '');
+    const stripped = path.replace(/^MilletGenesDB::/, '');
     if (colorMap[stripped]) return colorMap[stripped];
     // Leaf-level fallback
     if (node.id === 'Upregulated' || node.data?.name === 'Upregulated') return UPREG_COLOR;
@@ -131,7 +131,7 @@ export default function KronaChart({ data }) {
             >
               All Species
             </button>
-            {breadcrumb.filter(bc => bc.label !== 'MIMI-DB').map((bc, i) => (
+            {breadcrumb.filter(bc => bc.label !== 'MilletGenesDB').map((bc, i) => (
               <span key={i}>
                 <span className="krona-breadcrumb-sep">›</span>
                 <button
@@ -191,7 +191,7 @@ export default function KronaChart({ data }) {
             // Otherwise (Species or Stress), just show the name
             return name;
           }}
-          arcLabelsSkipAngle={drillNode ? 4 : 8}
+          arcLabelsSkipAngle={drillNode ? 3 : 3}
           arcLabelsTextColor="#333333"
           arcLabelsRadiusOffset={0.55}
           onClick={handleClick}
@@ -209,7 +209,7 @@ export default function KronaChart({ data }) {
             if (!centerNode) return null;
             const name = centerNode.data?.name || centerNode.id;
             // Don't show center text at the very root
-            if (name === 'MIMI-DB' || name === 'All Species') return null;
+            if (name === 'MilletGenesDB' || name === 'All Species') return null;
 
             return (
               <text

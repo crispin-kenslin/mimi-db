@@ -6,7 +6,7 @@ function Footer() {
     <footer className="footer">
       <div className="footer-inner">
         <div className="footer-brand">
-          <h3>MIMI DB</h3>
+          <h3>MilletGenesDB</h3>
           <p>
             The Minor Millets Database is a comprehensive integrative resource containing
             genomic, transcriptomic, and metabolomic data for six minor millet species,
@@ -31,7 +31,7 @@ function Footer() {
         </div>
       </div>
       <div className="footer-bottom">
-        &copy; {new Date().getFullYear()} MIMI DB — Minor Millets Database. Tamil Nadu Agricultural University. All rights reserved.
+        &copy; {new Date().getFullYear()} MilletGenesDB — Minor Millets Database. Tamil Nadu Agricultural University. All rights reserved.
       </div>
     </footer>
   );

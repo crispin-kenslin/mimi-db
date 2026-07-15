@@ -1,4 +1,4 @@
-"""CSV-based data layer for MIMI-DB.
+"""CSV-based data layer for MilletGenesDB.
 
 All data is loaded from CSV files in data/csv/ at import time and cached in memory.
 Edit the CSV files to update data — changes take effect on server restart.
@@ -383,7 +383,7 @@ def get_chart_data() -> Dict[str, Any]:
     deg_distribution = {}
 
     krona = {
-        "name": "MIMI-DB",
+        "name": "MilletGenesDB",
         "children": []
     }
 
@@ -456,22 +456,26 @@ def get_chart_data() -> Dict[str, Any]:
                     print(f"Error reading {csv_file}: {e}")
 
         for stress, values in stress_counts.items():
+            stress_children = []
+            if values["up"] > 0:
+                stress_children.append({
+                    "name": "Upregulated",
+                    "value": values["up"]
+                })
+            if values["down"] > 0:
+                stress_children.append({
+                    "name": "Downregulated",
+                    "value": values["down"]
+                })
+            
+            if stress_children:
+                crop_node["children"].append({
+                    "name": stress.upper(),
+                    "children": stress_children
+                })
 
-            crop_node["children"].append({
-                "name": stress.upper(),
-                "children": [
-                    {
-                        "name": "Upregulated",
-                        "value": values["up"]
-                    },
-                    {
-                        "name": "Downregulated",
-                        "value": values["down"]
-                    }
-                ]
-            })
-
-        krona["children"].append(crop_node)
+        if crop_node["children"]:
+            krona["children"].append(crop_node)
 
         genes_per_crop.append({
             "name": crop["name"],

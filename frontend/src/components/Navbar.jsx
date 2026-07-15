@@ -42,7 +42,7 @@ function Navbar() {
         <div className="navbar-inner">
           <Link to="/" className="navbar-brand">
             <div className="navbar-brand-icon">
-              <img src={logo} alt="MIMI DB" className="navbar-logo" />
+              <img src={logo} alt="MilletGenesDB" className="navbar-logo" />
             </div>
             <div className="navbar-brand-text">
               <span className="navbar-brand-title">MilletGenesDB</span>

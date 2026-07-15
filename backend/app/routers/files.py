@@ -134,7 +134,7 @@ async def ftp_crop_browser(crop_name: str) -> str:
       <head>
         <meta charset='utf-8' />
         <meta name='viewport' content='width=device-width, initial-scale=1' />
-        <title>MIMI FTP - {escape(crop_name)}</title>
+        <title>MilletGenesDB FTP - {escape(crop_name)}</title>
         <style>
           body {{ font-family: Segoe UI, Arial, sans-serif; margin: 24px; color: #1f2937; }}
           h1 {{ margin-bottom: 6px; }}
@@ -148,7 +148,7 @@ async def ftp_crop_browser(crop_name: str) -> str:
         </style>
       </head>
       <body>
-        <h1>MIMI Data FTP Index: {escape(crop_name)}</h1>
+        <h1>MilletGenesDB Data FTP Index: {escape(crop_name)}</h1>
         <p class='meta'>Total files indexed: {index['total_files']}</p>
         {''.join(sections)}
       </body>

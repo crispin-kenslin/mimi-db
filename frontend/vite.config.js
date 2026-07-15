@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react'
 
 // https://vitejs.dev/config/
 export default defineConfig(({ command }) => ({
-  base: '/mimi-db/',
+  base: '/',
   plugins: [react()],
   server: {
     host: true,
