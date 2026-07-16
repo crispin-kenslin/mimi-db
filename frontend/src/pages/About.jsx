@@ -25,6 +25,14 @@ const DEVELOPERS = [
     initials: 'D3',
     color: '#24719b',
   },
+  {
+    name: 'Dr.N.Bharathi',
+    role: 'Associate Professor (Bioinformatics)',
+    affiliation: 'Department of Plant Molecular Biology & Bioinformatics, TNAU',
+    email: 'bharathi.n@tnau.ac.in',
+    initials: 'D4',
+    color: '#24719b',
+  },
 ];
 
 function DeveloperCard({ dev }) {
@@ -170,11 +178,13 @@ function About() {
             </p>
           </div>
 
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-            gap: '1.75rem',
-          }}>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(4, 1fr)',
+              gap: '1.75rem',
+            }}
+          >
             {DEVELOPERS.map(dev => (
               <DeveloperCard key={dev.name} dev={dev} />
             ))}

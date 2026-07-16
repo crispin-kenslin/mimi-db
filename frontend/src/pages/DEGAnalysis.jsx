@@ -12,6 +12,7 @@ function DEGAnalysis() {
   const [loading, setLoading] = useState(true);
   const [sequenceModalOpen, setSequenceModalOpen] = useState(false);
   const [selectedGene, setSelectedGene] = useState(null);
+  const [bioprojectId, setBioprojectId] = useState(null);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'auto' });
@@ -21,8 +22,26 @@ function DEGAnalysis() {
     const fetchStats = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`/api/transcriptomics/csv/${cropSlug}/${stressType}`);
+        const [response, projectsResponse] = await Promise.all([
+          fetch(`/api/transcriptomics/csv/${cropSlug}/${stressType}`),
+          fetch(`/api/transcriptomics/stress_projects`).catch(() => null)
+        ]);
         if (!response.ok) throw new Error('Failed to load data');
+
+        if (projectsResponse && projectsResponse.ok) {
+          const projects = await projectsResponse.json();
+          const currentCropName = cropSlug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+          const currentStressName = stressType.charAt(0).toUpperCase() + stressType.slice(1);
+          const match = projects.find(p => p.crop.toLowerCase() === currentCropName.toLowerCase() && p.stress.toLowerCase() === currentStressName.toLowerCase());
+          if (match) {
+            setBioprojectId(match.bioproject_id);
+          } else {
+            setBioprojectId(null);
+          }
+        } else {
+          setBioprojectId(null);
+        }
+
         const csvText = await response.text();
         const splitCSV = (line) => {
           const cols = [];
@@ -67,14 +86,14 @@ function DEGAnalysis() {
         const parsed = dataRows.map(row => {
           const cols = splitCSV(row);
           const get = (i) => (i >= 0 && i < cols.length ? cols[i] : '');
-          
+
           const log2FoldChange = parseFloat(get(idxLog2));
           const pvalue = parseFloat(get(idxP));
           const padj = parseFloat(get(idxPadj));
-          
+
           let status = 'Not Significant';
           let color = '#9ca3af'; // gray
-          
+
           if (padj < 0.05) {
             if (log2FoldChange > 1) {
               status = 'Upregulated';
@@ -84,7 +103,7 @@ function DEGAnalysis() {
               color = '#ef4444'; // red
             }
           }
-          
+
           return {
             geneId: get(idxGene),
             log2FoldChange,
@@ -100,7 +119,7 @@ function DEGAnalysis() {
             product: get(idxProduct)
           };
         }).filter(r => !isNaN(r.log2FoldChange));
-        
+
         setPlotData(parsed);
 
         const totalGenes = parsed.length;
@@ -204,6 +223,35 @@ function DEGAnalysis() {
       {!loading && plotData.length > 0 && (
         <section className="deg-volcano-section">
           <div className="section-inner">
+            {bioprojectId && (
+              <div
+                style={{
+                  textAlign: 'center',
+                  marginBottom: '2rem',
+                  padding: '1.5rem',
+                  backgroundColor: '#f3f4f6',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '8px',
+                }}
+              >
+                <a
+                  href={`https://www.ebi.ac.uk/ena/browser/view/${bioprojectId}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    color: '#000',
+                    textDecoration: 'none',
+                    fontWeight: '600',
+                    fontSize: '1.2rem',
+                  }}
+                >
+                  View the original experimental data -{" "}
+                  <span style={{ textDecoration: "underline" }}>
+                    {bioprojectId}
+                  </span>
+                </a>
+              </div>
+            )}
             <h2 className="section-title">Volcano Plot (Click genes on the plot to view their sequence)</h2>
             <div className="volcano-container" style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
               <Plot

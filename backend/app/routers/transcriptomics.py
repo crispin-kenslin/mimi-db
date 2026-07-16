@@ -52,6 +52,36 @@ def get_available_stresses(crop_name: str):
 
     return stresses
 
+@transcriptomics_router.get("/stress_projects")
+def get_stress_projects():
+    import csv
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    base_path = os.path.normpath(os.path.join(current_dir, '..', '..', '..', 'data'))
+    csv_path = os.path.normpath(os.path.join(base_path, 'csv', 'stress.csv'))
+    
+    if not os.path.exists(csv_path):
+        return []
+    
+    projects = []
+    try:
+        with open(csv_path, 'r', encoding='utf-8') as f:
+            reader = csv.reader(f)
+            headers = next(reader, None)
+            if not headers:
+                return []
+            
+            headers = [h.strip() for h in headers]
+            for row in reader:
+                if len(row) >= 3:
+                    projects.append({
+                        "crop": row[0].strip(),
+                        "stress": row[1].strip(),
+                        "bioproject_id": row[2].strip()
+                    })
+    except Exception as e:
+        print(f"Error reading {csv_path}: {e}")
+    return projects
+
 
 @transcriptomics_router.get("/csv/{crop_name}/{stress_type}")
 def get_deg_csv(crop_name: str, stress_type: str):
